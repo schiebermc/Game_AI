@@ -2,6 +2,7 @@
 # Tic-Tac-Toe Player, by Matthew Schieber
 # Incldues an opening book and minimax decision making
 # alpha-beta is uneccessary, we can always search to endgame.
+# template if for use on hackerrank.com/challenges/tic-tac-toe/
 
 import random
 
@@ -22,11 +23,9 @@ class Game_Player:
         # otherwise employ minimax algorithm
         else:
             if(player == 'X'):
-                not_player = 'O'
+                move, val = self.nextMove_recurse(board, player, 'O', True)
             else:
-                not_player = 'X'
-            move, val = self.nextMove_recurse(board, player, not_player, True)
-        
+                move, val = self.nextMove_recurse(board, player, 'X', True)
         return move
         
     def openingBook(self, playing_board, count):
@@ -50,6 +49,7 @@ class Game_Player:
             return None, score
     
         # recurse
+        best_move = False
         best_val = float('-inf') if maximizing_player else float('inf') 
         for move in moves: 
      
@@ -69,56 +69,22 @@ class Game_Player:
                 if val < best_val:
                     best_move, best_val = move, val
         
-        return best_move, best_val
-
+        if(best_move):
+            return best_move, best_val
+        else:
+            return moves[0], best_val
+        
     def eval_fn(self, playing_board, player, not_player):    
-        board = playing_board.board
-        n = 3
-        # check rows:
-        for i in range(n):
-            if(board[i][0] == player and board[i][1] == player and board[i][2] == player):
-                return 10
-            elif(board[i][0] == not_player and board[i][1] == not_player and board[i][2] == not_player):
-                return -10
-            
-        # check cols
-        for i in range(n):
-            if(board[0][i] == player and board[1][i] == player and board[2][i] == player):
-                return 10
-            elif(board[0][i] == not_player and board[1][i] == not_player and board[2][i] == not_player):
-                return -10
-            
-        # check diags
-        winner = True
-        for i in range(n):
-            if(board[i][i] != player):
-                winner = False
-        if(winner):
-            return 10
-        
-        winner = False
-        for i in range(n):
-            if(board[i][i] != not_player):
-                winner = True
-        if(not winner):
-            return -10
-        
-        winner = True
-        for i in range(n):
-            if(board[n - 1 - i][n - 1 - i] != player):
-                winner = False
-        if(winner):
-            return 10
-        
-        winner = False
-        for i in range(n):
-            if(board[n - 1 - i][n - 1 - i] != not_player):
-                winner = True
-        if(not winner):
-            return -10
-        
-        return 0
+        end = playing_board.end_game()
+        if(end):
+            if(end == player):
+                return float('inf')
+            else:
+                return float('-inf')
+        else:
+            return 0
 
+    
 class Board:
     
     def __init__(self, board):
@@ -163,6 +129,21 @@ class Board:
         new_playing_board = Board(new_board)
         return new_playing_board
     
+    def end_game(self):
+        # check rows/cols:
+        board = self.board
+        for i in range(self.n):
+            if(board[i][0] != '_' and board[i][0] == board[i][1] and board[i][1] == board[i][2]):
+                return board[i][0]
+            elif(board[0][i] != '_' and board[0][i] == board[1][i] and board[1][i] == board[2][i]):
+                return board[0][i]
+        # check diags
+        if(board[0][0] != '_' and board[0][0] == board[1][1] and board[1][1] == board[2][2]):
+            return board[1][1]
+        elif(board[0][2] != '_' and board[0][2] == board[1][1] and board[1][1] == board[2][0]):
+            return board[1][1]
+        else:
+            return False
     
 #If player is X, I'm the first player.
 #If player is O, I'm the second player.
