@@ -1,5 +1,4 @@
 #!/bin/python
-#!/bin/python
 # Bidding Tic-Tac-Toe Player, by Matthew Schieber
 # Incldues an opening book and minimax decision making
 # alpha-beta is uneccessary, we can always search to endgame.
