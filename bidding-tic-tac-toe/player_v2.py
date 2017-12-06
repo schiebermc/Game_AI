@@ -1,9 +1,10 @@
 #!/bin/python
 # Bidding Tic-Tac-Toe Player, by Matthew Schieber
-# Total revamp over vanilly player. 
+# Total revamp over vanilla player. 
 # Bidding strategy was wholey changed after noticing
-# logic for whinning strategies.  Essentially, if player
+# logic for winning strategies.  Essentially, if player
 # possesses the amount of chips to end the game, bid out.
+# (Note that bidding out must be done carefully)
 # If not, check if player could lose the game in one turn,
 # if so, bid out.  Otherwise bid the minimum amount.  
 # The objective is to accrue enough chips to end the game.
