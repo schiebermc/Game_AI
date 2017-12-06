@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-from isolation import Board, game_as_text
-
-
-# This file is your main submission that will be graded against. Do not
-# add any classes or functions to this file that are not part of the classes
-# that we want.
-
-# Submission Class 1
 class OpenMoveEvalFn:
 
     def score(self, game, maximizing_player_turn=True):
@@ -27,7 +19,6 @@ class OpenMoveEvalFn:
         return len(game.get_legal_moves())
 
 
-# Submission Class 2
 class CustomEvalFn2:
 
     def __init__(self):
@@ -61,7 +52,6 @@ class CustomEvalFn2:
             else:
                 return -tots
 
-# Submission Class 2
 class CustomEvalFn:
 
     def __init__(self):
@@ -176,7 +166,6 @@ class CustomEvalFn:
 #                return 5
 
 class CustomPlayer:
-    # TODO: finish this class!
     """Player that chooses a move using 
     your evaluation function and 
     a minimax algorithm 
@@ -343,9 +332,7 @@ class CustomPlayer:
             elif(last_move == (3, 3)):
                 best_move = (1, 3)
             else:
-                best_move = moves[randint(0, len(moves) - 1)]
-    
-            #print best_move
+                best_move = moves[randint(0, len(moves) - 1)
     
 
         # otherwise do the usual
