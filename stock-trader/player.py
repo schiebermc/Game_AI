@@ -8,7 +8,7 @@
 # The strategy thereafter is to buy low and sell high.  There are 
 # three parameters for my StockTrader class: 1) the percentage above
 # the mean price at which to sell a stock. 2) the percentage lower
-# than the mean price at which to my a stock. 3) the fraction of 
+# than the mean price at which to buy a stock. 3) the fraction of 
 # total money to use on a particular investment. After a simple
 # search on these parameters, my StockTrader increases its porfolio 
 # by more than 4500% on the sample case and nearly 1000% on the test
