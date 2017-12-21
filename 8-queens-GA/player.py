@@ -75,17 +75,20 @@ class creature(object):
 
 class population(object):
 
-    def __init__(self, n, board_size, mutation_rate, niters):
+    def __init__(self, n, board_size, mutation_rate, creatures=None):
         self.pop = []
         self.n = n
         self.mutation_rate = mutation_rate
         self.nsurvivors = n // 2
         self.board_size = board_size
-        self.niters = niters
-
-        for i in range(self.n):
-            self.pop.append(creature(self.board_size))
         self.fitness = []
+
+        if(creatures):
+            for i in range(self.n):
+                self.pop.append(creature(self.board_size, creatures[i]))
+        else:
+            for i in range(self.n):
+                self.pop.append(creature(self.board_size))
 
     def rank_fitness(self):
         self.fitness = []
@@ -143,13 +146,13 @@ class population(object):
         return
     
     def mutate(self, pos):
-        mutate = randint(0, 1)
+        mutate = choice(2, 1, p=[1.0-self.mutation_rate, self.mutation_rate])[0]
         if(mutate):
             ind = randint(0,7)
             val = randint(0,7)
             pos[ind] = val
 
-    def solve(self):
+    def solve(self, niters):
         
         # setup ~ 
         niter = 0
@@ -157,7 +160,7 @@ class population(object):
         median = []
         best = []        
 
-        while(niter < self.niters):
+        while(niter < niters):
             
             # kill off the weak
             survival_distro = self.choose_survivors()
