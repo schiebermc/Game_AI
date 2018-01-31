@@ -110,31 +110,6 @@ class CustomEvalFn:
             float: The current state's score, based on your own heuristic.
             
         """
-        
-#        # how many moves are left
-#        tots = len(game.get_legal_moves())
-#        
-#        # endgame?
-#        if(maximizing_player_turn):
-#            if(not tots):
-#                return float("inf")
-#            elif(tots < 5):
-#                if(tots % 2):
-#                    return (tots - 50)
-#                else:
-#                    return (50 - tots)
-#            else:
-#                return -tots
-#        else:
-#            if(not tots):
-#                return float("-inf")
-#            elif(tots < 5):
-#                if(tots % 2):
-#                    return (50 - tots)
-#                else:
-#                    return (tots - 50)
-#            else:
-#                return tots
 
         # how many moves are around me?
         tots = self.partition_check(game)
@@ -152,18 +127,6 @@ class CustomEvalFn:
                 return 50 - tots
             else:
                 return tots - 50
-        
-#        # endgame?
-#        if(maximizing_player_turn):
-#            if(not tots):
-#                return float("inf")
-#            else:
-#                return 5
-#        else:
-#            if(not tots):
-#                return float("-inf")
-#            else:
-#                return 5
 
 class CustomPlayer:
     """Player that chooses a move using 
@@ -485,9 +448,6 @@ class CustomPlayer:
             child_game = game.forecast_move(move)
             thing, val = self.alphabeta(child_game, time_left, depth, alpha, beta, not maximizing_player)
        
-            #if(depth == 1 and move == (3, 0)):
-            #    print move, val
-     
             # exit if time is running out
             if(time_left() < 100):
                 return None, None     
@@ -503,9 +463,6 @@ class CustomPlayer:
             else:
                 if val < best_val: 
                     best_move, best_val = move, val 
-                #elif(val == float("inf") and self.iterative_depth > 6):
-                #    best_move, best_val = move, val                    
-
 
             # apply alpha beta rules
             if(maximizing_player):
