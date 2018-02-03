@@ -1,58 +1,6 @@
 #!/usr/bin/env python
-class OpenMoveEvalFn:
 
-    def score(self, game, maximizing_player_turn=True):
-        """Score the current game state
-        
-        Evaluation function that outputs a score equal to how many 
-        moves are open for AI player on the board.
-            
-        Args
-            param1 (Board): The board and game state.
-            param2 (bool): True if maximizing player is active.
-
-        Returns:
-            float: The current state's score. Number of your agent's moves.
-            
-        """
-
-        return len(game.get_legal_moves())
-
-
-class CustomEvalFn2:
-
-    def __init__(self):
-        pass
-
-    def score(self, game, maximizing_player_turn):
-        """Score the current game state
-        
-        Custom evaluation function that acts however you think it should. This 
-        is not required but highly encouraged if you want to build the best 
-        AI possible.
-        
-        Args
-            game (Board): The board and game state.
-            maximizing_player_turn (bool): True if maximizing player is active.
-        Returns:
-            float: The current state's score, based on your own heuristic.
-            
-        """
-        tots = len(game.get_legal_moves())        
-
-        # endgame?
-        if(not tots):
-            if(maximizing_player_turn):
-                return float("inf")
-            else:
-                return float("-inf")
-        else:
-            if(maximizing_player_turn):
-                return tots
-            else:
-                return -tots
-
-class CustomEvalFn:
+class Evaluator:
 
     def __init__(self):
 
@@ -96,20 +44,6 @@ class CustomEvalFn:
     
 
     def score(self, game, maximizing_player_turn):
-        """Score the current game state
-        
-        Custom evaluation function that acts however you think it should. This 
-        is not required but highly encouraged if you want to build the best 
-        AI possible.
-        
-        Args
-            game (Board): The board and game state.
-            maximizing_player_turn (bool): True if maximizing player is active.
-
-        Returns:
-            float: The current state's score, based on your own heuristic.
-            
-        """
 
         # how many moves are around me?
         tots = self.partition_check(game)
@@ -128,25 +62,10 @@ class CustomEvalFn:
             else:
                 return tots - 50
 
-class CustomPlayer:
-    """Player that chooses a move using 
-    your evaluation function and 
-    a minimax algorithm 
-    with alpha-beta pruning.
-    You must finish and test this player
-    to make sure it properly uses minimax
-    and alpha-beta to return a good move."""
+class Player:
 
-    def __init__(self, search_depth=2, eval_fn=CustomEvalFn()):
-        """Initializes your player.
-        
-        if you find yourself with a superior eval function, update the default 
-        value of `eval_fn` to `CustomEvalFn()`
-        
-        Args:
-            search_depth (int): The depth to which your agent will search
-            eval_fn (function): Utility function used by your agent
-        """
+    def __init__(self, search_depth=2, eval_fn=Evaluator()):
+
         self.eval_fn = eval_fn
         self.search_depth = search_depth
 
@@ -169,135 +88,6 @@ class CustomPlayer:
         if(game.move_count == 0):
             best_move = (0, 0)
     
-        # my lame attempt at an opening book..
-        elif(game.move_count == 1):
-            last_move = game.__last_queen_move__
-            
-            # | Q |   |   |   |    
-            #     |   |   |   |    
-            #         |   |   |    
-            #             |   |
-            #if(last_move == (0, 0) or last_move == (0, 6)):# here
-            #    best_move = (6, 0) 
-            if(last_move == (6, 0) or last_move == (6, 6)):
-                best_move = (6, 4) 
-            # -----------------------------------------------------
-            
-            # |   | Q |   |   |    
-            #     |   |   |   |    
-            #         |   |   |    
-            #             |   |
-            elif(last_move == (0, 1) or last_move == (1, 0)):# here
-                best_move = (0, 0) 
-            elif(last_move == (0, 5) or last_move == (1, 6)):
-                best_move = (0, 6) 
-            elif(last_move == (5, 0) or last_move == (6, 1)):
-                best_move = (6, 0) 
-            elif(last_move == (5, 6)): 
-                best_move = (4, 5)
-            elif(last_move == (6, 5)):
-                best_move = (5, 4) 
-            # -----------------------------------------------------
-            
-            # |   |   | Q |   |    
-            #     |   |   |   |    
-            #         |   |   |    
-            #             |   |
-            elif(last_move == (0, 2) or last_move == (0, 4)):# here
-                best_move = (0, 3) 
-            elif(last_move == (2, 0) or last_move == (4, 0)):
-                best_move = (3, 0) 
-            elif(last_move == (6, 2) or last_move == (6, 4)):
-                best_move = (6, 3) 
-            elif(last_move == (2, 6) or last_move == (4, 6)):
-                best_move = (3, 6) 
-            # -----------------------------------------------------
-            
-            # |   |   |   | Q |    
-            #     |   |   |   |    
-            #         |   |   |    
-            #             |   |
-            elif(last_move == (0, 3) or last_move == (3, 0) or last_move == (3, 6) or last_move == (6, 3)): #test this!
-                best_move = (3, 3)
-            # -----------------------------------------------------
-            
-            # |   |   |   |   |    
-            #     | Q |   |   |    
-            #         |   |   |    
-            #             |   |
-            elif(last_move == (1, 1)): #here
-                best_move = (0, 2) 
-            elif(last_move == (1, 5)):
-                best_move = (0, 4) 
-            elif(last_move == (5, 1)):
-                best_move = (4, 0) 
-            elif(last_move == (5, 5)):
-                best_move = (6, 4)
-
-            # -----------------------------------------------------
-            
-            # |   |   |   |   |    
-            #     |   | Q |   |    
-            #         |   |   |    
-            #             |   |
-
-            elif(last_move == (1, 2)):
-                best_move = (6, 2) 
-            elif(last_move == (2, 1)):
-                best_move = (2, 6) 
-            
-            elif(last_move == (4, 1)):
-                best_move = (1, 4) 
-            elif(last_move == (1, 4)):
-                best_move = (4, 1) 
-    
-            elif(last_move == (2, 5)):
-                best_move = (5, 2) 
-            #elif(last_move == (5, 2)):
-            #    best_move = (2, 5) 
-            
-            elif(last_move == (4, 5)):
-                best_move = (1, 2) 
-            elif(last_move == (5, 4)):
-                best_move = (2, 1) 
-            
-            # -----------------------------------------------------
-            
-            # |   |   |   |   |    
-            #     |   |   | Q |    
-            #         |   |   |    
-            #             |   |
-        
-
-            # -----------------------------------------------------
-            
-            # |   |   |   |   |    
-            #     |   |   |   |    
-            #         | Q |   |    
-            #             |   |
-            
-            elif(last_move == (2, 4)): #here
-                best_move = (1, 3) 
-            elif(last_move == (2, 2)): 
-                best_move = (1, 3) 
-            elif(last_move == (4, 2)): 
-                best_move = (5, 3) 
-            elif(last_move == (4, 4)): 
-                best_move = (5, 3) 
-            
-            # -----------------------------------------------------
-            
-            # |   |   |   |   |    
-            #     |   |   |   |    
-            #         |   |   |    
-            #             | Q |
-            
-            elif(last_move == (3, 3)):
-                best_move = (1, 3)
-            else:
-                best_move = moves[randint(0, len(moves) - 1)
-    
-
         # otherwise do the usual
         else:
         
@@ -366,22 +156,7 @@ class CustomPlayer:
         
         return best_move
 
-    def utility(self, game):
-        """Can be updated if desired"""
-        return self.eval_fn.score(game)
-
     def minimax(self, game, time_left, depth=0, maximizing_player=True):
-        """Implementation of the minimax algorithm
-        
-        Args:
-            game (Board): A board and game state.
-            time_left (function): Used to determine time left before timeout
-            depth: Used to track how deep you are in the search tree
-            maximizing_player (bool): True if maximizing player is active.
-
-        Returns:
-            (tuple, int): best_move, best_val
-        """
         
         # update
         depth += 1
@@ -419,19 +194,6 @@ class CustomPlayer:
 
     def alphabeta(self, game, time_left, depth=0, alpha=float("-inf"), beta=float("inf"),
                   maximizing_player=True):
-        """Implementation of the alphabeta algorithm
-        
-        Args:
-            game (Board): A board and game state.
-            time_left (function): Used to determine time left before timeout
-            depth: Used to track how deep you are in the search tree
-            alpha (float): Alpha value for pruning
-            beta (float): Beta value for pruning
-            maximizing_player (bool): True if maximizing player is active.
-
-        Returns:
-            (tuple, int): best_move, best_val
-        """
         
         # update
         depth += 1
