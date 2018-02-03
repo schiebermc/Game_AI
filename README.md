@@ -1,8 +1,16 @@
 # Game Bots by Matthew Schieber
 
-Here lies a collection of undefeatable Game AI I have created.
-This is a rolling project which has allowed me to delve into various AI algorithms and game AI methods.
-Each project contains its own directory. 
+In pursuit of my passion for Artificial Intelligence, games, and puzzles, I created this repo for personal exploration.  
+Each project contains its own directory. Here are short summaries of each project:
+
+* 8-Queens-GA: Solution for the 8-queens problem using genetic algorithms.  
+* N-Puzzle: Solution to the N-puzzle using A* search.
+* bidding-tic-tac-toe: Game player, wildly different from classical tic-tac-toe with bidding strategies.
+* dead-end-isolation: Game player, a variant of isolation.
+* maze-escape: Game player, includes general solution to partially-observable maze escape problems, etc.
+* stock-trader: Game player, employs machine learning on stock data to construct intelligent trading strategies.
+* tic-tac-toe: Game player, classical tic-tac-toe using minimax decision making.
+
 
 ## Acknowledgments
 
