@@ -51,6 +51,8 @@ class TronBoard:
             for col_bump in [-1, 0, 1]:
                 if(row_bump != 0 and col_bump != 0):
                     continue
+                if(row_bump == 0 and col_bump == 0):
+                    continue
                 new_row = row + row_bump 
                 new_col = col + col_bump 
                 # could do try-accept here, but actually checking is much faster in recurse
@@ -158,16 +160,16 @@ def map_move_to_string(board, cr, cc, nr, nc):
     
     if(cr == nr):
         if(cc == nc - 1):
-            return "LEFT"
-        elif(cc == nc + 1):
             return "RIGHT"
+        elif(cc == nc + 1):
+            return "LEFT"
         else:
             raise Exception("Illegal move")
     elif(cc == nc):
         if(cr == nr - 1):
-            return "UP"
-        elif(cr == nr + 1):
             return "DOWN"
+        elif(cr == nr + 1):
+            return "UP"
         else:
             raise Exception("Illegal move")
     else:        
