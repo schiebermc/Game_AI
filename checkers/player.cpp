@@ -354,14 +354,6 @@ public:
         Moves moves_from_here = get_single_directed_attacks(piece, 
             this_pos.first, this_pos.second, last_pos, initial_move);
         
-//        if(debug_) {
-//            printf("successfull jumps to: ");
-//            for(auto x : moves_from_here) {
-//                printf("(%d, %d) ", x.first, x.second);
-//            }
-//            printf("\n");
-//        }
-        
         Moves all_legal_moves_this_piece;
         if(moves_from_here.size() == 0) {
             // thus completes this move, add it to all legal moves and proceed
@@ -489,6 +481,21 @@ public:
         }
     }
 
+    char get_player() {return player_;}
+
+    void switch_perspective() {
+        
+        // switches the perspective of the board
+        // essentially inverts a few data members
+        
+        player_ = (player_ == 'b' ? 'w' : 'b');
+        designate_n_and_player(n_, player_);
+
+        // pieces_ tracks a players Peices, not the enemy
+        pieces_.clear();
+        designate_pieces();
+    }
+    
     friend class BoardEvaluator;
 
 };
@@ -525,12 +532,12 @@ private:
 
 public:
 
-    BoardEvaluator(Board b) : Board(b) {}
+    BoardEvaluator(Board b) : Board(b) {
+        prepare_utility();
+    }
 
     int utility() {
 
-        prepare_utility();
-        
         // Here is where the magic happens
         // How does one evaluate the utility of a given checkers board?
         // It might be fairly straightforward.. how many pieces do I have
@@ -549,6 +556,11 @@ public:
         }
 
         return score;
+    }
+
+    bool game_over() {
+        return enemy_kings_count_ + enemy_pawns_count_ == 0 or 
+            ally_kings_count_ + ally_pawns_count_ == 0;
     }
 
 };
@@ -593,23 +605,77 @@ public:
 
 class MiniMaxPlayer : public Player {
 
+private:
+    size_t depth_;
+    bool debug_ = false;
+
 public:
-    MiniMaxPlayer(Board b) : Player(b) {
+    MiniMaxPlayer(Board b, size_t depth=3) : Player(b) {
+        depth_ = depth;
     }
 
     Move virtual get_best_move() {
-            
+
+        int depth = 0;
+        int polarity = 1;
+        auto stuff = get_best_move_recursive(board_, depth, polarity);
+        
+        if(debug_) {
+            printf("final return : %d\n", stuff.second);
+        }
+        
+        return stuff.first;
+    }
+    
+    pair<Move, int> get_best_move_recursive(Board b, int depth, int polarity) {
+
+        if(depth > depth_) {
+            throw;
+        }        
+
+        // setup search parameters
         int best_utility = -1000;
         Move best_move({}, {}, false);
-        for(auto move : board_.get_legal_moves()) {
-            BoardEvaluator evaluator(board_.forecast_move(move));
-            int this_utility = evaluator.utility();
+
+        for(auto move : b.get_legal_moves()) {
+                
+            // how good is this subtree?
+            int this_move;
+            int this_utility;
+
+            auto new_board = b.forecast_move(move);
+            BoardEvaluator evaluator(new_board);
+            
+            if(depth < depth_ and not evaluator.game_over()) {
+           
+                new_board.switch_perspective(); 
+                auto move_and_utility = get_best_move_recursive(new_board, depth + 1, 1 - polarity);
+                auto this_move = move_and_utility.first;
+                this_utility = move_and_utility.second;
+            
+            } else {
+    
+                // since new_board.switch_perspective is called above, 
+                // the utility wil be from the perspective at this level. 
+                // therefore, the returned utility needs to be inverted
+                this_utility = evaluator.utility();
+                this_utility = (polarity == 1 ? this_utility : -1 * this_utility);
+            }            
+
+            if(debug_) {
+                printf("recursing in minimax - depth: %d, this_util: %d\n", depth, this_utility);
+            }
+
             if(this_utility > best_utility) {
-                best_utility = this_utility;
                 best_move = move;
-            } 
+                best_utility = this_utility;
+                if(debug_) {
+                    printf("NEW BEST UTIL!\n");
+                }
+            }
         }
-        return best_move;
+
+        return {best_move, best_utility};
     }
 
 };
@@ -715,6 +781,24 @@ int test_board_forecasting1() {
     return s == ans_board;
 }
 
+int test_switch_perspectives() {
+
+    string test_board = 
+        string("________") + 
+        string("________") + 
+        string("________") +
+        string("________") +
+        string("________") +
+        string("___b____") +
+        string("__w_____") +
+        string("________");
+    
+    Board b(8, 'w', test_board);
+    b.switch_perspective(); 
+    auto moves = b.get_legal_moves();
+    Move answer({6, 2}, {{4, 4}}, false);
+    return moves.size() == 1 and moves[0] != answer;
+}
 int test_best_move1() {
 
     string test_board = 
@@ -758,18 +842,86 @@ int test_best_move2() {
     return evaluator.utility() == 3;
 }
 
+int test_best_move3() {
+        
+    string test_board = 
+        string("___b_b_b") +  
+        string("b_b_b_b_") + 
+        string("___b____") + 
+        string("b_______") + 
+        string("_w______") + 
+        string("______B_") + 
+        string("_w_____b") + 
+        string("________"); 
+
+    Board b(8, 'b', test_board);
+    MiniMaxPlayer p(b);
+    auto m = p.get_best_move(); 
+    Move answer({3, 0}, {{5, 2}, {7, 0}}, true);
+    return m == answer;
+}
+
+int test_best_move4() {
+        
+    string test_board = 
+        string("_b_b___b") + 
+        string("__b_____") +
+        string("___b_w_b") +
+        string("__b_____") +
+        string("___b____") +
+        string("________") +
+        string("_w_w___w") +
+        string("w_w_w_w_");
+
+    Board b(8, 'w', test_board);
+    MiniMaxPlayer p(b, 2);
+    auto m = p.get_best_move(); 
+    Move answer({2, 5}, {{1, 4}}, false); 
+    return m != answer;
+}
+
 void tests() {
 
-    int count = 0;
-    count += test_valid_moves1();
-    count += test_valid_moves2();
-    count += test_valid_moves3();
-    count += test_valid_moves4();
-    count += test_board_forecasting1();
-    count += test_best_move1();
-    count += test_best_move2();
-    printf("%d/%d test passed\n", count, 7); 
+    // pretty manual.. but it works for now
+    vector<string> test_names;
+    test_names.push_back("test_valid_moves1()");
+    test_names.push_back("test_valid_moves2()");
+    test_names.push_back("test_valid_moves3()");
+    test_names.push_back("test_valid_moves4()");
+    test_names.push_back("test_board_forecasting1()");
+    test_names.push_back("test_switch_perspectives()");
+    test_names.push_back("test_best_move1()");
+    test_names.push_back("test_best_move2()");
+    test_names.push_back("test_best_move3()");
+    test_names.push_back("test_best_move4()");
+    
+    vector<int> test_results; 
+    test_results.push_back(test_valid_moves1());
+    test_results.push_back(test_valid_moves2());
+    test_results.push_back(test_valid_moves3());
+    test_results.push_back(test_valid_moves4());
+    test_results.push_back(test_board_forecasting1());
+    test_results.push_back(test_switch_perspectives());
+    test_results.push_back(test_best_move1());
+    test_results.push_back(test_best_move2());
+    test_results.push_back(test_best_move3());
+    test_results.push_back(test_best_move4());
 
+    int count = 0;
+    for(auto x : test_results) {
+        count += x;
+    }
+    
+    if(count != test_results.size()) {
+        printf("TESTS FAILED!\n"); 
+        for(int i=0; i<test_results.size(); i++) {
+            if(test_results[i] == 0) {
+                printf("    %s - FAILED\n", test_names[i].c_str());
+            }
+        }
+    } else {
+        printf("ALL TEST PASS! %d/%d\n", count, count);
+    }
 }
 
 int main() {
@@ -787,7 +939,6 @@ int main() {
  
 return 0;
 }
-
 
 
 
