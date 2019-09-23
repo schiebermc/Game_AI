@@ -24,12 +24,12 @@ class Move : public pair<xy, vector<xy>> {
 
 private:
     
-    bool kinged_;
+    bool kinged_=false;
     set<xy> captures_;
      
 public:
 
-    Move(xy pos, vector<xy> path, bool kinged=false, set<xy> captures={}) :
+    Move(xy pos, vector<xy> path, bool kinged, set<xy> captures={}) :
     pair<xy, vector<xy>>(pos, path){
         kinged_ = kinged;
         captures_ = captures;
@@ -52,7 +52,9 @@ public:
     void grant_king() {kinged_ = true;}
     bool get_kinged() const {return kinged_;}
     void capture(xy pos) { captures_.emplace(pos);}
+    set<xy> get_captures() { return captures_;}
     void add_one_movement(xy new_pos) {this->second.push_back(new_pos);}
+    xy get_origin() const {return this->first;}
     xy get_shifted_position(int shift) const {
         int n = this->second.size();
         if(n >= shift) {
@@ -103,6 +105,7 @@ public:
         color_ = (color_ == 'B' ? 'b' : color_);
         color_ = (color_ == 'W' ? 'w' : color_);
         is_king_ = (player == 'B' or player == 'W' ? true : false);
+        
         if(player == 'w' or player == 'W') {
             can_attack_ = {'b', 'B'};
         } else {
@@ -133,6 +136,10 @@ private:
 
     int n_;
     char player_;
+    char ally_pawn_;
+    char ally_king_;
+    char enemy_pawn_;
+    char enemy_king_;
     vector<vector<char>> board_;
 
     // pieces_ tracks a players Peices, not the enemy
@@ -181,13 +188,24 @@ private:
         n_ = n;
         player_ = player;
         if(player == 'w' or player == 'W') {
+            ally_pawn_ = 'w';
+            ally_king_ = 'W';
+            enemy_pawn_ = 'b';
+            enemy_king_ = 'B';
             ally_pieces_ = {'w', 'W'};
             enemy_pieces_ = {'b', 'B'};
         } else {
+            
+            ally_pawn_ = 'b';
+            ally_king_ = 'B';
+            enemy_pawn_ = 'w';
+            enemy_king_ = 'W';
             ally_pieces_ = {'b', 'B'};
             enemy_pieces_ = {'w', 'W'};
         }
     }
+
+    void set_board(vector<vector<char>> board) {board_ = board; }
 
 public:
 
@@ -255,7 +273,7 @@ public:
         const int i = piece.get_i_coordinate();
         const int j = piece.get_j_coordinate(); 
         Moves viable_moves_from_here;
-        Move empty_move_from_here({i, j}, {});
+        Move empty_move_from_here({i, j}, {}, piece.get_is_king());
 
         vector<int> shifts;
         if(piece.get_is_king()) {
@@ -266,13 +284,28 @@ public:
 
         for(int i_shift : shifts) {
             for(int j_shift : {-1, 1}) {
+                
                 xy pos = {i + i_shift, j + j_shift};
+                Move new_move = empty_move_from_here;
+                new_move.add_one_movement(pos);
+                
+                // bound check
+                if(not (pos.first < n_ and pos.first >= 0 and 
+                   pos.second < n_ and pos.second >= 0)) {
+                    continue;
+                }     
+
                 // just make sure we hit an empty space
-                if(board_[pos.first][pos.second] == '_') {
-                    Move new_move = empty_move_from_here;
-                    new_move.add_one_movement(pos);
-                    viable_moves_from_here.push_back(new_move);
+                if(board_[pos.first][pos.second] != '_') {
+                    continue;
                 }
+        
+                // was a King created?
+                if(pos.first == 0 or pos.first == n_-1) {
+                    new_move.grant_king();
+                }
+                    
+                viable_moves_from_here.push_back(new_move);
             }
         }
         return viable_moves_from_here;
@@ -287,7 +320,7 @@ public:
         const int i = piece.get_i_coordinate();
         const int j = piece.get_j_coordinate(); 
 
-        Move empty_move_from_here({i, j}, {});
+        Move empty_move_from_here({i, j}, {}, piece.get_is_king());
         Moves initial_moves_from_here = 
             get_single_directed_attacks(piece, i, j, init_last_pos, 
                             empty_move_from_here);
@@ -347,77 +380,104 @@ public:
 
     Moves get_single_directed_attacks(Piece& piece, const int i,
             const int j, xy& last_pos, Move initial_move) const {
-        Moves successful_attacking_moves;
-        // returns all one-level attack moves, gauranteed to not backtrack to last_pos
-        if(piece.get_is_king() or initial_move.get_kinged()) {
-            successful_attacking_moves += 
-              get_single_directed_attacks_vertically_fixed(piece, -1, i, j, last_pos, initial_move);
-            successful_attacking_moves += 
-              get_single_directed_attacks_vertically_fixed(piece, 1, i, j, last_pos, initial_move);
-        } else {
-            int direction = piece.get_direction(); 
-            successful_attacking_moves += 
-              get_single_directed_attacks_vertically_fixed(piece, direction, i, j, last_pos, initial_move);
-        } 
-        return successful_attacking_moves;
-    }
     
-    Moves get_single_directed_attacks_vertically_fixed(Piece& piece, 
-        const int direction, const int i, const int j, xy& last_pos, Move initial_move) const {
-
         // this function needs to update *invididual* moves to monitor capturing and kinging
         
         Moves successful_attacking_moves;
         const auto attackable_pieces = piece.get_can_attack();
 
-        if(debug_) {
-            printf("checking %d shifted attacks for moves originating from (%d, %d)\n", direction, i, j);
+        vector<int> i_shifts;
+        if(piece.get_is_king() or initial_move.get_kinged()) {
+            i_shifts = {1, -1};
+        } else {
+            i_shifts = {piece.get_direction()};
         }
 
-        for(int j_shift : {-1, 1}) {
-            xy pos = {i + 2*direction, j + j_shift*2};
-            
-            // bound check
-            if(not (pos.first < n_ and pos.first >= 0 and 
-               pos.second < n_ and pos.second >= 0)) {
-                continue;
-            }     
-             
-            // direction check (backtracking prevention) 
-//            if(pos.first == last_pos.first and pos.second == last_pos.second) {
-//                continue;
-//            }
-        
-            // landing check
-            if(board_[pos.first][pos.second] != '_') {
-                continue;
-            }
-            
-            if(debug_) {
-                printf("shifted to: (%d, %d)\n", pos.first, pos.second);
-            }
+        for(int i_shift : i_shifts) {
 
-            // did this actually eat a piece, that was not already eaten?
-            xy enemy_pos = {i + direction, j + j_shift};
-            if(attackable_pieces.find(board_[enemy_pos.first][enemy_pos.second]) !=
-                attackable_pieces.end() and not initial_move.has_eaten(enemy_pos)) {
-            
-                // create new move, from trunk of old move
-                Move new_move = initial_move;
-                new_move.add_one_movement(pos);
-                new_move.capture(enemy_pos);
+            if(debug_) {
+                printf("checking %d shifted attacks for moves originating from (%d, %d)\n", i_shift, i, j);
+            }
+        
+            for(int j_shift : {-1, 1}) {
+                xy pos = {i + 2*i_shift, j + j_shift*2};
                 
-                // was a King created?
-                if(pos.first == 0 or n_-1) {
-                    new_move.grant_king();
+                // bound check
+                if(not (pos.first < n_ and pos.first >= 0 and 
+                   pos.second < n_ and pos.second >= 0)) {
+                    continue;
+                }     
+                 
+                // landing check
+                if(board_[pos.first][pos.second] != '_') {
+                    continue;
                 }
+                
                 if(debug_) {
-                    printf("piece eaten!\n");
+                    printf("shifted to: (%d, %d)\n", pos.first, pos.second);
                 }
-                successful_attacking_moves.push_back(new_move);
+    
+                // did this actually eat a piece, that was not already eaten?
+                xy enemy_pos = {i + i_shift, j + j_shift};
+                if(attackable_pieces.find(board_[enemy_pos.first][enemy_pos.second]) !=
+                    attackable_pieces.end() and not initial_move.has_eaten(enemy_pos)) {
+                
+                    // create new move, from trunk of old move
+                    Move new_move = initial_move;
+                    new_move.add_one_movement(pos);
+                    new_move.capture(enemy_pos);
+                    
+                    // was a King created?
+                    if(pos.first == 0 or pos.first == n_-1) {
+                        new_move.grant_king();
+                    }
+                    if(debug_) {
+                        printf("piece eaten!\n");
+                    }
+                    successful_attacking_moves.push_back(new_move);
+                }
             }
         }
         return successful_attacking_moves;
+    }
+
+
+    Board forecast_move(Move m) {
+        
+        // copy and modify
+        Board new_Board = *this; 
+        vector<vector<char>> new_board = board_;
+
+        // remove captured pieces
+        for (auto capture : m.get_captures()) {
+            new_board[capture.first][capture.second] = '_';
+        } 
+
+        // update this piece
+        xy origin_pos = m.get_origin();
+        xy final_pos = m.get_shifted_position(1); 
+        new_board[final_pos.first][final_pos.second] = 
+            new_board[origin_pos.first][origin_pos.second];
+        new_board[origin_pos.first][origin_pos.second] = '_';
+
+        // did it transform to a king?
+        if(m.get_kinged()) {
+            new_board[final_pos.first][final_pos.second] = ally_king_; 
+        }        
+
+        // finally, assign the board
+        new_Board.set_board(new_board);    
+        return new_Board; 
+    }
+
+    string get_board_string() {
+        string s;
+        for(auto row : board_) {
+            for(auto c : row) {
+                s += c;
+            }
+        }   
+        return s;
     }
 
     void print() {
@@ -429,12 +489,74 @@ public:
         }
     }
 
+    friend class BoardEvaluator;
+
+};
+
+class BoardEvaluator : Board {
+
+private:
+
+    size_t ally_kings_count_=0;
+    size_t ally_pawns_count_=0;
+    size_t enemy_pawns_count_=0;
+    size_t enemy_kings_count_=0;
+    void prepare_utility() {
+        for(auto row : board_) {
+            for(auto c : row) {
+                if(c != '_') {
+                    if(ally_pieces_.find(c) != ally_pieces_.end()) {
+                        if(c == ally_king_) {
+                            ally_kings_count_++;
+                        } else {
+                            ally_pawns_count_++;
+                        }
+                    } else {
+                        if(c == enemy_king_) {
+                            enemy_kings_count_++;
+                        } else {
+                            enemy_pawns_count_++;
+                        }
+                    }
+                }        
+            }
+        }
+    }
+
+public:
+
+    BoardEvaluator(Board b) : Board(b) {}
+
+    int utility() {
+
+        prepare_utility();
+        
+        // Here is where the magic happens
+        // How does one evaluate the utility of a given checkers board?
+        // It might be fairly straightforward.. how many pieces do I have
+        // versus how many pieces does the enemy have? Let's also give a 
+        // 2x precedence to king pieces.
+        int score = (2*ally_kings_count_ + ally_pawns_count_) - 
+                 (2*enemy_kings_count_ + enemy_pawns_count_);
+        
+        // however, a win or loss should be exponentiated in value.
+        if(ally_kings_count_ + ally_pawns_count_ == 0) {
+            score = -100;
+        }
+
+        if(enemy_kings_count_ + enemy_pawns_count_ == 0) {
+            score = 100;
+        }
+
+        return score;
+    }
+
 };
 
 
 class Player {
 
-private:
+protected:
     Board board_;
 
 public:
@@ -444,41 +566,50 @@ public:
         board_ = b;
     }
 
-    void virtual move() {
+    Move virtual get_best_move() {
+        return Move({}, {}, false); 
+    }
+
+    void move() {
+        get_best_move().perform_move();
+    }
+
+    friend class RandomPlayer;
+    friend class MiniMaxPlayer;
+};
+
+class RandomPlayer : public Player {
+
+public:
+    RandomPlayer(Board b) : Player(b) {
+    }
+
+    Move virtual get_best_move() {
+        auto moves = board_.get_legal_moves();
+        return moves[rand() % moves.size()];
     }
 
 };
 
-class RandomPlayer : Player {
-
-private:
-    Board board_;
+class MiniMaxPlayer : public Player {
 
 public:
-    RandomPlayer(Board b) {
-        board_ = b;
+    MiniMaxPlayer(Board b) : Player(b) {
     }
 
-    void virtual move() {
-        auto moves = board_.get_legal_moves();
-        moves[rand() % moves.size()].perform_move();        
-    }
-
-};
-
-class MiniMaxPlayer : Player {
-
-private:
-    Board board_;
-
-public:
-    MiniMaxPlayer(Board b) {
-        board_ = b;
-    }
-
-    void virtual move() {
-        auto moves = board_.get_legal_moves();
-        moves[rand() % moves.size()].perform_move();        
+    Move virtual get_best_move() {
+            
+        int best_utility = -1000;
+        Move best_move({}, {}, false);
+        for(auto move : board_.get_legal_moves()) {
+            BoardEvaluator evaluator(board_.forecast_move(move));
+            int this_utility = evaluator.utility();
+            if(this_utility > best_utility) {
+                best_utility = this_utility;
+                best_move = move;
+            } 
+        }
+        return best_move;
     }
 
 };
@@ -498,7 +629,7 @@ int test_valid_moves1() {
     Board b(8, 'w', test_board); 
     auto moves = b.get_legal_moves();
     
-    Move answer({6, 1}, {{4, 3}, {2, 1}, {0, 3}, {2, 5}, {0, 7}}); 
+    Move answer({6, 1}, {{4, 3}, {2, 1}, {0, 3}, {2, 5}, {0, 7}}, false); 
     return  moves.size() == 1 and answer == moves[0]; 
 }
 
@@ -519,37 +650,143 @@ int test_valid_moves2() {
     return  moves.size() == 4; 
 }
 
+int test_valid_moves3() {
+
+    string test_board = 
+        string("_W_____b") +  
+        string("________") + 
+        string("_b_b_w_b") + 
+        string("______b_") + 
+        string("___w___w") + 
+        string("________") + 
+        string("________") + 
+        string("w_w_B_B_"); 
+
+    Board b(8, 'b', test_board); 
+    auto moves = b.get_legal_moves();
+    return moves.size() == 10;
+}
+
+int test_valid_moves4() {
+
+    string test_board = 
+        string("___b_b_b") +  
+        string("__w___b_") + 
+        string("_b_b___b") + 
+        string("b_______") + 
+        string("_______b") + 
+        string("____w_w_") + 
+        string("_w_____w") + 
+        string("w_w_w_w_"); 
+
+    Board b(8, 'b', test_board); 
+    auto moves = b.get_legal_moves();
+    Move answer({4, 7}, {{6, 5}}, false); 
+    return moves.size() == 1 and  moves[0] == answer;
+}
+
+int test_board_forecasting1() {
+
+    string test_board = 
+        string("________") + 
+        string("_b______") + 
+        string("________") +
+        string("_b______") +
+        string("________") +
+        string("_b______") +
+        string("w_______") +
+        string("________");
+
+    Board b(8, 'w', test_board); 
+    auto moves = b.get_legal_moves();
+    auto new_board = b.forecast_move(moves[0]);    
+
+    string ans_board = 
+        string("__W_____") + 
+        string("________") + 
+        string("________") +
+        string("________") +
+        string("________") +
+        string("________") +
+        string("________") +
+        string("________");
+    
+    string s = new_board.get_board_string();
+    return s == ans_board;
+}
+
+int test_best_move1() {
+
+    string test_board = 
+        string("________") + 
+        string("_____b__") + 
+        string("________") +
+        string("_____b__") +
+        string("________") +
+        string("_b_b____") +
+        string("__w_____") +
+        string("________");
+
+    Board b(8, 'w', test_board);
+    MiniMaxPlayer p(b);
+    bool good = true;
+    for(int i=0; i<10; i++) {
+        auto m = p.get_best_move(); 
+        Move answer({6, 2}, {{4, 4}, {2, 6}, {0, 4}}, false); 
+        good = good and m == answer;
+    }
+    return good;
+}
+
+int test_best_move2() {
+        
+    // this actually fixed a bug in forecasting
+    string test_board = 
+        string("___W____") +  
+        string("________") + 
+        string("________") + 
+        string("W_______") + 
+        string("________") + 
+        string("______b_") + 
+        string("_b_b_b__") + 
+        string("B_______"); 
+
+    Board b(8, 'b', test_board);
+    MiniMaxPlayer p(b);
+    auto m = p.get_best_move(); 
+    BoardEvaluator evaluator(b.forecast_move(m));
+    return evaluator.utility() == 3;
+}
+
 void tests() {
 
     int count = 0;
     count += test_valid_moves1();
     count += test_valid_moves2();
-    printf("%d/%d test passed\n", count, 2); 
+    count += test_valid_moves3();
+    count += test_valid_moves4();
+    count += test_board_forecasting1();
+    count += test_best_move1();
+    count += test_best_move2();
+    printf("%d/%d test passed\n", count, 7); 
 
 }
 
 int main() {
 
-//    tests();
 
     char p;
     cin >> p;
     int n;
     cin >> n;
     auto b = Board(n, p);
-    RandomPlayer mastermind(b);
+    MiniMaxPlayer mastermind(b);
     mastermind.move(); 
 
+//    tests();
  
 return 0;
 }
-
-
-
-
-
-
-
 
 
 
