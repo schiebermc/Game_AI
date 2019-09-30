@@ -1,3 +1,17 @@
+/*
+    Checkers Game AI by Matthew Schieber
+    All implementations were concieved and iterated by me.
+    Please make any suggestions at https://github.com/schiebermc/Game_AI
+
+    Current Status:
+        - Minimax searching with alpha-beta pruning 
+        - No opening book
+        - No killer heuristic
+        - *everything* is in this file, unfortunately. including tests. I was
+        initially forced to do this because of the submission requirements for
+        online competitions.
+*/
+
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -12,7 +26,6 @@
 #include <float.h>
 #include <bitset>
 
-#define IOS ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
 using namespace std;
 
 typedef pair<int, int> xy;
@@ -539,6 +552,13 @@ public:
 
 class BoardEvaluator : Board {
 
+  // Class to compute the 'goodness' of a board's state. 
+  // This is where the Game AI derives it's 'intelligence' from!
+  // In hindsight, it might have been better to not have this
+  // class be derived from the board class. It's just troublesome
+  // synchronizing the original player's perspective with the 
+  // current perspective of the board in whatever depth of the search algo
+
 private:
 
     bool debug_ = false;
@@ -681,24 +701,24 @@ public:
     pair<Move, float> get_best_move_recursive(Board b, int depth, int maximizing, float alpha=FLT_MIN, float beta=FLT_MAX) {
 
         // minimax search algorithm with alpha beta pruning
-        // depth begins as 1 (shown above), if depth == depth, recursion ends
+        // depth begins as 1 (shown above), if depth == depth_, recursion ends
         // maximizing refers to the level of the search tree and which player
-        // is in control. 
+        // is in control at that point in the game.
 
         if(depth > depth_) {
             throw;
         }        
 
         // setup search parameters
-        float best_utility = (maximizing ? -1000. : 1000.);
         Move best_move({}, {}, false);
+        float best_utility = (maximizing ? -1000. : 1000.);
         
+        // scan all subtrees branching from this point in the game
         for(auto move : b.get_legal_moves()) {
                 
             // how good is this subtree?
-            Move this_move({}, {}, false);
             float this_utility;
-
+            Move this_move({}, {}, false);
             auto new_board = b.forecast_move(move);
             BoardEvaluator pre_evaluator(new_board);
  
@@ -714,7 +734,11 @@ public:
                 this_utility = move_and_utility.second;
             
             } else {
-   
+
+                // this is either truncated by depth or a leaf node (game over)   
+                // whenver the utility is computed, it should *always* be
+                // from the perpective of the original (maximizing) player.
+                // this is imperative for the minimax algo to work correctly.
                 new_board.switch_perspective_to_player(player_);
                 BoardEvaluator evaluator(new_board);   
                 this_utility = evaluator.utility();
@@ -733,9 +757,6 @@ public:
                 if(this_utility > best_utility) {
                     best_move = move;
                     best_utility = this_utility;
-                    if(debug_) {
-                        printf("NEW BEST UTIL! -- %f\n", best_utility);
-                    }
                 } 
             } else {
                 if(this_utility < best_utility) {
@@ -746,6 +767,7 @@ public:
 
             // alpha-beta pruning - this will greatly decrease the 
             // complexity and allow us to search deeper in less time.
+            // https://en.wikipedia.org/wiki/Alpha–beta_pruning
             if(maximizing) {
                 alpha = max(alpha, this_utility);
             } else {
@@ -762,10 +784,13 @@ public:
 };
 
 int play_game(Player a, Player b) {
-
-    
+    // TODO test between different depths of players
     return 1;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////// >>>> TEST SUITE <<<<< /////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 int test_valid_moves1() {
 
@@ -781,7 +806,6 @@ int test_valid_moves1() {
 
     Board b(8, 'w', test_board); 
     auto moves = b.get_legal_moves();
-    
     Move answer({6, 1}, {{4, 3}, {2, 1}, {0, 3}, {2, 5}, {0, 7}}, false); 
     return  moves.size() == 1 and answer == moves[0]; 
 }
@@ -1051,7 +1075,6 @@ void tests() {
     test_names.push_back("test_best_move3()");
     test_names.push_back("test_best_move4()");
     test_names.push_back("test_best_move5()");
-    
     
     vector<int> test_results; 
     test_results.push_back(test_valid_moves1());
