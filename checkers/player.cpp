@@ -3,11 +3,13 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <cmath>
 #include <map>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <climits>
+#include <float.h>
 #include <bitset>
 
 #define IOS ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
@@ -203,6 +205,7 @@ private:
             ally_pieces_ = {'b', 'B'};
             enemy_pieces_ = {'w', 'W'};
         }
+    
     }
 
     void set_board(vector<vector<char>> board) {board_ = board; }
@@ -496,6 +499,40 @@ public:
         designate_pieces();
     }
     
+    void switch_perspective_to_player(char player) {
+        
+        // switches the perspective of the board
+        // essentially inverts a few data members
+        player_ = player;
+        designate_n_and_player(n_, player_);
+
+        // pieces_ tracks a players Peices, not the enemy
+        pieces_.clear();
+        designate_pieces();
+    }
+    
+    pair<float, float> get_centroid_for_pieces(set<char> pieces) {
+        int count = 0;
+        float rval = 0.;
+        float cval = 0.;
+        for(int i=0; i<n_; i++) {
+            for(int j=0; j<n_; j++) {
+                char c = board_[i][j];
+                if(pieces.find(c) != pieces.end()) {
+                    rval += i;
+                    cval += j;
+                    count++;
+                }
+            }
+        }
+
+        pair<float, float> centroid;
+        if(count != 0) {
+            centroid = {rval / count, cval / count};
+        }
+        return centroid;
+    }   
+
     friend class BoardEvaluator;
 
 };
@@ -504,6 +541,7 @@ class BoardEvaluator : Board {
 
 private:
 
+    bool debug_ = false;
     size_t ally_kings_count_=0;
     size_t ally_pawns_count_=0;
     size_t enemy_pawns_count_=0;
@@ -536,26 +574,39 @@ public:
         prepare_utility();
     }
 
-    int utility() {
+    float utility() {
 
         // Here is where the magic happens
         // How does one evaluate the utility of a given checkers board?
         // It might be fairly straightforward.. how many pieces do I have
         // versus how many pieces does the enemy have? Let's also give a 
         // 2x precedence to king pieces.
-        int score = (2*ally_kings_count_ + ally_pawns_count_) - 
-                 (2*enemy_kings_count_ + enemy_pawns_count_);
+        float score = (2.*ally_kings_count_ + ally_pawns_count_) - 
+                 (2.*enemy_kings_count_ + enemy_pawns_count_);
         
         // however, a win or loss should be exponentiated in value.
         if(ally_kings_count_ + ally_pawns_count_ == 0) {
-            score = -100;
+            score = -100.;
         }
 
         if(enemy_kings_count_ + enemy_pawns_count_ == 0) {
-            score = 100;
+            score = 100.;
         }
 
-        return score;
+        auto c1 = get_centroid_for_pieces(ally_pieces_);
+        auto c2 = get_centroid_for_pieces(enemy_pieces_);
+
+        float dist = sqrt(pow(c1.first - c2.first, 2) + pow(c1.second - c2.second, 2));
+        float extra_utility =  (float(n_) - dist) / float(n_) / float(n_);
+        
+        if(debug_) {
+            printf("based on player: %c\n", player_);
+            printf("returning utility of %f based on (%zu, %zu) vs (%zu, %zu)\n", score, 
+                    ally_kings_count_, ally_pawns_count_, 
+                    enemy_kings_count_, enemy_pawns_count_);
+        }
+
+        return score;// + extra_utility;
     }
 
     bool game_over() {
@@ -570,12 +621,14 @@ class Player {
 
 protected:
     Board board_;
+    char player_;
 
 public:
     Player() {}
     
-    Player(Board b) {
+    Player(Board b, char player) {
         board_ = b;
+        player_ = player;
     }
 
     Move virtual get_best_move() {
@@ -593,7 +646,7 @@ public:
 class RandomPlayer : public Player {
 
 public:
-    RandomPlayer(Board b) : Player(b) {
+    RandomPlayer(Board b, char player) : Player(b, player) {
     }
 
     Move virtual get_best_move() {
@@ -610,68 +663,96 @@ private:
     bool debug_ = false;
 
 public:
-    MiniMaxPlayer(Board b, size_t depth=3) : Player(b) {
+    MiniMaxPlayer(Board b, char player, size_t depth) : Player(b, player) {
         depth_ = depth;
     }
 
     Move virtual get_best_move() {
 
-        int depth = 0;
-        int polarity = 1;
-        auto stuff = get_best_move_recursive(board_, depth, polarity);
+        auto stuff = get_best_move_recursive(board_, 1, 1);
         
         if(debug_) {
-            printf("final return : %d\n", stuff.second);
+            printf("final returned utility : %f\n", stuff.second);
         }
         
         return stuff.first;
     }
     
-    pair<Move, int> get_best_move_recursive(Board b, int depth, int polarity) {
+    pair<Move, float> get_best_move_recursive(Board b, int depth, int maximizing, float alpha=FLT_MIN, float beta=FLT_MAX) {
+
+        // minimax search algorithm with alpha beta pruning
+        // depth begins as 1 (shown above), if depth == depth, recursion ends
+        // maximizing refers to the level of the search tree and which player
+        // is in control. 
 
         if(depth > depth_) {
             throw;
         }        
 
         // setup search parameters
-        int best_utility = -1000;
+        float best_utility = (maximizing ? -1000. : 1000.);
         Move best_move({}, {}, false);
-
+        
         for(auto move : b.get_legal_moves()) {
                 
             // how good is this subtree?
-            int this_move;
-            int this_utility;
+            Move this_move({}, {}, false);
+            float this_utility;
 
             auto new_board = b.forecast_move(move);
-            BoardEvaluator evaluator(new_board);
-            
-            if(depth < depth_ and not evaluator.game_over()) {
+            BoardEvaluator pre_evaluator(new_board);
+ 
+            if(depth < depth_ and not pre_evaluator.game_over()) {
            
-                new_board.switch_perspective(); 
-                auto move_and_utility = get_best_move_recursive(new_board, depth + 1, 1 - polarity);
-                auto this_move = move_and_utility.first;
+                // have to change perspectives so the board knows which
+                // player to answer queries for
+                new_board.switch_perspective();
+ 
+                auto move_and_utility = get_best_move_recursive(new_board, 
+                        depth + 1, 1 - maximizing, alpha, beta);
+                this_move = move_and_utility.first;
                 this_utility = move_and_utility.second;
             
             } else {
-    
-                // since new_board.switch_perspective is called above, 
-                // the utility wil be from the perspective at this level. 
-                // therefore, the returned utility needs to be inverted
+   
+                new_board.switch_perspective_to_player(player_);
+                BoardEvaluator evaluator(new_board);   
                 this_utility = evaluator.utility();
-                this_utility = (polarity == 1 ? this_utility : -1 * this_utility);
             }            
 
             if(debug_) {
-                printf("recursing in minimax - depth: %d, this_util: %d\n", depth, this_utility);
+                move.print();
+                printf("depth: %d, maximizing: %d, this_util: %f\n", 
+                        depth, maximizing, this_utility);
+                if(depth == 1) 
+                    printf("\n\n");
             }
 
-            if(this_utility > best_utility) {
-                best_move = move;
-                best_utility = this_utility;
-                if(debug_) {
-                    printf("NEW BEST UTIL!\n");
+            // minimax
+            if(maximizing == 1) {
+                if(this_utility > best_utility) {
+                    best_move = move;
+                    best_utility = this_utility;
+                    if(debug_) {
+                        printf("NEW BEST UTIL! -- %f\n", best_utility);
+                    }
+                } 
+            } else {
+                if(this_utility < best_utility) {
+                    best_move = move;
+                    best_utility = this_utility;
                 }
+            }
+
+            // alpha-beta pruning - this will greatly decrease the 
+            // complexity and allow us to search deeper in less time.
+            if(maximizing) {
+                alpha = max(alpha, this_utility);
+            } else {
+                beta = min(beta, this_utility);
+            }
+            if(alpha >= beta) {
+                break;
             }
         }
 
@@ -679,6 +760,12 @@ public:
     }
 
 };
+
+int play_game(Player a, Player b) {
+
+    
+    return 1;
+}
 
 int test_valid_moves1() {
 
@@ -781,7 +868,28 @@ int test_board_forecasting1() {
     return s == ans_board;
 }
 
-int test_switch_perspectives() {
+int test_board_forecasting2() {
+
+    // tests forecasting and evaluation
+
+    string test_board = 
+        string("________") + 
+        string("_____b__") + 
+        string("________") +
+        string("_____b__") +
+        string("________") +
+        string("b__b____") +
+        string("__w_____") +
+        string("________");
+
+    Board b(8, 'w', test_board);
+    auto moves = b.get_legal_moves();
+    auto new_board = b.forecast_move(moves[0]);
+    BoardEvaluator eval(new_board);
+    return eval.utility() - 1. < FLT_EPSILON;
+}
+
+int test_switch_perspectives1() {
 
     string test_board = 
         string("________") + 
@@ -799,6 +907,26 @@ int test_switch_perspectives() {
     Move answer({6, 2}, {{4, 4}}, false);
     return moves.size() == 1 and moves[0] != answer;
 }
+
+int test_switch_perspectives2() {
+
+    string test_board = 
+        string("_______W") + 
+        string("_w___b__") + 
+        string("____b___") +
+        string("________") +
+        string("w_______") +
+        string("___b___w") +
+        string("__w_____") +
+        string("_____b__");
+    
+    Board b(8, 'w', test_board);
+    BoardEvaluator e1(b);
+    b.switch_perspective(); 
+    BoardEvaluator e2(b);
+    return fabs(e1.utility() - -1*e2.utility()) < FLT_EPSILON;
+}
+
 int test_best_move1() {
 
     string test_board = 
@@ -807,18 +935,22 @@ int test_best_move1() {
         string("________") +
         string("_____b__") +
         string("________") +
-        string("_b_b____") +
+        string("b__b____") +
         string("__w_____") +
         string("________");
 
     Board b(8, 'w', test_board);
-    MiniMaxPlayer p(b);
     bool good = true;
-    for(int i=0; i<10; i++) {
-        auto m = p.get_best_move(); 
-        Move answer({6, 2}, {{4, 4}, {2, 6}, {0, 4}}, false); 
-        good = good and m == answer;
+    
+    for(int depth=1; depth<=6; depth++) {
+        MiniMaxPlayer p(b, 'w', depth);
+        for(int i=0; i<10; i++) {
+            auto m = p.get_best_move(); 
+            Move answer({6, 2}, {{4, 4}, {2, 6}, {0, 4}}, false); 
+            good = good and m == answer;
+        }
     }
+
     return good;
 }
 
@@ -836,7 +968,7 @@ int test_best_move2() {
         string("B_______"); 
 
     Board b(8, 'b', test_board);
-    MiniMaxPlayer p(b);
+    MiniMaxPlayer p(b, 'b', 1);
     auto m = p.get_best_move(); 
     BoardEvaluator evaluator(b.forecast_move(m));
     return evaluator.utility() == 3;
@@ -855,7 +987,7 @@ int test_best_move3() {
         string("________"); 
 
     Board b(8, 'b', test_board);
-    MiniMaxPlayer p(b);
+    MiniMaxPlayer p(b, 'b', 2);
     auto m = p.get_best_move(); 
     Move answer({3, 0}, {{5, 2}, {7, 0}}, true);
     return m == answer;
@@ -874,10 +1006,32 @@ int test_best_move4() {
         string("w_w_w_w_");
 
     Board b(8, 'w', test_board);
-    MiniMaxPlayer p(b, 2);
+    MiniMaxPlayer p(b, 'w', 2);
     auto m = p.get_best_move(); 
     Move answer({2, 5}, {{1, 4}}, false); 
     return m != answer;
+}
+
+int test_best_move5() {
+        
+    string test_board = 
+        string("_____b_b") + 
+        string("__b_b_b_") + 
+        string("___b___b") + 
+        string("w_______") + 
+        string("________") + 
+        string("______w_") + 
+        string("_____w_w") + 
+        string("__w_w_w_"); 
+        
+    Board b(8, 'w', test_board);
+    MiniMaxPlayer p1(b, 'w', 3);
+    auto m1 = p1.get_best_move(); 
+    MiniMaxPlayer p2(b, 'w', 2);
+    auto m2 = p2.get_best_move(); 
+    MiniMaxPlayer p5(b, 'w', 5);
+    auto m5 = p5.get_best_move(); 
+    return m1 == m2 and m2 == m5;
 }
 
 void tests() {
@@ -889,11 +1043,15 @@ void tests() {
     test_names.push_back("test_valid_moves3()");
     test_names.push_back("test_valid_moves4()");
     test_names.push_back("test_board_forecasting1()");
-    test_names.push_back("test_switch_perspectives()");
+    test_names.push_back("test_board_forecasting2()");
+    test_names.push_back("test_switch_perspectives1()");
+    test_names.push_back("test_switch_perspectives2()");
     test_names.push_back("test_best_move1()");
     test_names.push_back("test_best_move2()");
     test_names.push_back("test_best_move3()");
     test_names.push_back("test_best_move4()");
+    test_names.push_back("test_best_move5()");
+    
     
     vector<int> test_results; 
     test_results.push_back(test_valid_moves1());
@@ -901,11 +1059,14 @@ void tests() {
     test_results.push_back(test_valid_moves3());
     test_results.push_back(test_valid_moves4());
     test_results.push_back(test_board_forecasting1());
-    test_results.push_back(test_switch_perspectives());
+    test_results.push_back(test_board_forecasting2());
+    test_results.push_back(test_switch_perspectives1());
+    test_results.push_back(test_switch_perspectives2());
     test_results.push_back(test_best_move1());
     test_results.push_back(test_best_move2());
     test_results.push_back(test_best_move3());
     test_results.push_back(test_best_move4());
+    test_results.push_back(test_best_move5());
 
     int count = 0;
     for(auto x : test_results) {
@@ -932,7 +1093,7 @@ int main() {
     int n;
     cin >> n;
     auto b = Board(n, p);
-    MiniMaxPlayer mastermind(b);
+    MiniMaxPlayer mastermind(b, p, 5);
     mastermind.move(); 
 
 //    tests();
