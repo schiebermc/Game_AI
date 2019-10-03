@@ -601,8 +601,8 @@ public:
         // It might be fairly straightforward.. how many pieces do I have
         // versus how many pieces does the enemy have? Let's also give a 
         // 2x precedence to king pieces.
-        float score = (2.*ally_kings_count_ + ally_pawns_count_) - 
-                 (2.*enemy_kings_count_ + enemy_pawns_count_);
+        float score = (5.*ally_kings_count_ + ally_pawns_count_) - 
+                 (5.*enemy_kings_count_ + enemy_pawns_count_);
         
         // however, a win or loss should be exponentiated in value.
         if(ally_kings_count_ + ally_pawns_count_ == 0) {
@@ -616,7 +616,7 @@ public:
         auto c1 = get_centroid_for_pieces(ally_pieces_);
         auto c2 = get_centroid_for_pieces(enemy_pieces_);
 
-        float dist = sqrt(pow(c1.first - c2.first, 2) + pow(c1.second - c2.second, 2));
+        float dist = sqrt(pow(c1.first - c2.first, 2) +  pow(c1.second - c2.second, 2));
         float extra_utility =  (float(n_) - dist) / float(n_) / float(n_);
         
         if(debug_) {
@@ -626,7 +626,7 @@ public:
                     enemy_kings_count_, enemy_pawns_count_);
         }
 
-        return score;// + extra_utility;
+        return score + extra_utility;
     }
 
     bool game_over() {
@@ -795,14 +795,14 @@ int play_game(Player a, Player b) {
 int test_valid_moves1() {
 
     string test_board = 
-        string("________") + 
-        string("b_b_b_b_") + 
-        string("___b____") +
-        string("__b_____") +
-        string("_w______") +
-        string("w_b___w_") +
-        string("_w_____b") +
-        string("w_____w_");
+        "________"  
+        "b_b_b_b_"  
+        "___b____" 
+        "__b_____" 
+        "_w______" 
+        "w_b___w_" 
+        "_w_____b" 
+        "w_____w_";
 
     Board b(8, 'w', test_board); 
     auto moves = b.get_legal_moves();
@@ -813,14 +813,14 @@ int test_valid_moves1() {
 int test_valid_moves2() {
 
     string test_board = 
-        string("________") + 
-        string("________") + 
-        string("_w_w____") +
-        string("__B_____") +
-        string("_w_w____") +
-        string("________") +
-        string("________") +
-        string("________");
+        "________"  
+        "________"  
+        "_w_w____" 
+        "__B_____" 
+        "_w_w____" 
+        "________" 
+        "________" 
+        "________";
 
     Board b(8, 'b', test_board); 
     auto moves = b.get_legal_moves();
@@ -830,14 +830,14 @@ int test_valid_moves2() {
 int test_valid_moves3() {
 
     string test_board = 
-        string("_W_____b") +  
-        string("________") + 
-        string("_b_b_w_b") + 
-        string("______b_") + 
-        string("___w___w") + 
-        string("________") + 
-        string("________") + 
-        string("w_w_B_B_"); 
+        "_W_____b"   
+        "________"  
+        "_b_b_w_b"  
+        "______b_"  
+        "___w___w"  
+        "________"  
+        "________"  
+        "w_w_B_B_"; 
 
     Board b(8, 'b', test_board); 
     auto moves = b.get_legal_moves();
@@ -847,14 +847,14 @@ int test_valid_moves3() {
 int test_valid_moves4() {
 
     string test_board = 
-        string("___b_b_b") +  
-        string("__w___b_") + 
-        string("_b_b___b") + 
-        string("b_______") + 
-        string("_______b") + 
-        string("____w_w_") + 
-        string("_w_____w") + 
-        string("w_w_w_w_"); 
+        "___b_b_b"   
+        "__w___b_"  
+        "_b_b___b"  
+        "b_______"  
+        "_______b"  
+        "____w_w_"  
+        "_w_____w"  
+        "w_w_w_w_"; 
 
     Board b(8, 'b', test_board); 
     auto moves = b.get_legal_moves();
@@ -865,28 +865,28 @@ int test_valid_moves4() {
 int test_board_forecasting1() {
 
     string test_board = 
-        string("________") + 
-        string("_b______") + 
-        string("________") +
-        string("_b______") +
-        string("________") +
-        string("_b______") +
-        string("w_______") +
-        string("________");
+        "________"  
+        "_b______"  
+        "________" 
+        "_b______" 
+        "________" 
+        "_b______" 
+        "w_______" 
+        "________";
 
     Board b(8, 'w', test_board); 
     auto moves = b.get_legal_moves();
     auto new_board = b.forecast_move(moves[0]);    
 
     string ans_board = 
-        string("__W_____") + 
-        string("________") + 
-        string("________") +
-        string("________") +
-        string("________") +
-        string("________") +
-        string("________") +
-        string("________");
+        "__W_____"  
+        "________"  
+        "________" 
+        "________" 
+        "________" 
+        "________" 
+        "________" 
+        "________";
     
     string s = new_board.get_board_string();
     return s == ans_board;
@@ -897,14 +897,14 @@ int test_board_forecasting2() {
     // tests forecasting and evaluation
 
     string test_board = 
-        string("________") + 
-        string("_____b__") + 
-        string("________") +
-        string("_____b__") +
-        string("________") +
-        string("b__b____") +
-        string("__w_____") +
-        string("________");
+        "________"  
+        "_____b__"  
+        "________" 
+        "_____b__" 
+        "________" 
+        "b__b____" 
+        "__w_____" 
+        "________";
 
     Board b(8, 'w', test_board);
     auto moves = b.get_legal_moves();
@@ -916,14 +916,14 @@ int test_board_forecasting2() {
 int test_switch_perspectives1() {
 
     string test_board = 
-        string("________") + 
-        string("________") + 
-        string("________") +
-        string("________") +
-        string("________") +
-        string("___b____") +
-        string("__w_____") +
-        string("________");
+        "________"  
+        "________"  
+        "________" 
+        "________" 
+        "________" 
+        "___b____" 
+        "__w_____" 
+        "________";
     
     Board b(8, 'w', test_board);
     b.switch_perspective(); 
@@ -935,14 +935,14 @@ int test_switch_perspectives1() {
 int test_switch_perspectives2() {
 
     string test_board = 
-        string("_______W") + 
-        string("_w___b__") + 
-        string("____b___") +
-        string("________") +
-        string("w_______") +
-        string("___b___w") +
-        string("__w_____") +
-        string("_____b__");
+        "_______W"  
+        "_w___b__"  
+        "____b___" 
+        "________" 
+        "w_______" 
+        "___b___w" 
+        "__w_____" 
+        "_____b__";
     
     Board b(8, 'w', test_board);
     BoardEvaluator e1(b);
@@ -954,14 +954,14 @@ int test_switch_perspectives2() {
 int test_best_move1() {
 
     string test_board = 
-        string("________") + 
-        string("_____b__") + 
-        string("________") +
-        string("_____b__") +
-        string("________") +
-        string("b__b____") +
-        string("__w_____") +
-        string("________");
+        "________"  
+        "_____b__"  
+        "________" 
+        "_____b__" 
+        "________" 
+        "b__b____" 
+        "__w_____" 
+        "________";
 
     Board b(8, 'w', test_board);
     bool good = true;
@@ -982,14 +982,14 @@ int test_best_move2() {
         
     // this actually fixed a bug in forecasting
     string test_board = 
-        string("___W____") +  
-        string("________") + 
-        string("________") + 
-        string("W_______") + 
-        string("________") + 
-        string("______b_") + 
-        string("_b_b_b__") + 
-        string("B_______"); 
+        "___W____"   
+        "________"  
+        "________"  
+        "W_______"  
+        "________"  
+        "______b_"  
+        "_b_b_b__"  
+        "B_______"; 
 
     Board b(8, 'b', test_board);
     MiniMaxPlayer p(b, 'b', 1);
@@ -1001,14 +1001,14 @@ int test_best_move2() {
 int test_best_move3() {
         
     string test_board = 
-        string("___b_b_b") +  
-        string("b_b_b_b_") + 
-        string("___b____") + 
-        string("b_______") + 
-        string("_w______") + 
-        string("______B_") + 
-        string("_w_____b") + 
-        string("________"); 
+        "___b_b_b"   
+        "b_b_b_b_"  
+        "___b____"  
+        "b_______"  
+        "_w______"  
+        "______B_"  
+        "_w_____b"  
+        "________"; 
 
     Board b(8, 'b', test_board);
     MiniMaxPlayer p(b, 'b', 2);
@@ -1020,14 +1020,14 @@ int test_best_move3() {
 int test_best_move4() {
         
     string test_board = 
-        string("_b_b___b") + 
-        string("__b_____") +
-        string("___b_w_b") +
-        string("__b_____") +
-        string("___b____") +
-        string("________") +
-        string("_w_w___w") +
-        string("w_w_w_w_");
+        "_b_b___b"  
+        "__b_____" 
+        "___b_w_b" 
+        "__b_____" 
+        "___b____" 
+        "________" 
+        "_w_w___w" 
+        "w_w_w_w_";
 
     Board b(8, 'w', test_board);
     MiniMaxPlayer p(b, 'w', 2);
@@ -1039,14 +1039,14 @@ int test_best_move4() {
 int test_best_move5() {
         
     string test_board = 
-        string("_____b_b") + 
-        string("__b_b_b_") + 
-        string("___b___b") + 
-        string("w_______") + 
-        string("________") + 
-        string("______w_") + 
-        string("_____w_w") + 
-        string("__w_w_w_"); 
+        "_____b_b" 
+        "__b_b_b_" 
+        "___b___b" 
+        "w_______" 
+        "________" 
+        "______w_" 
+        "_____w_w" 
+        "__w_w_w_";
         
     Board b(8, 'w', test_board);
     MiniMaxPlayer p1(b, 'w', 3);
@@ -1116,7 +1116,7 @@ int main() {
     int n;
     cin >> n;
     auto b = Board(n, p);
-    MiniMaxPlayer mastermind(b, p, 5);
+    MiniMaxPlayer mastermind(b, p, 7);
     mastermind.move(); 
 
 //    tests();

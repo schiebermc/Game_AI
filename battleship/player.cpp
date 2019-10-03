@@ -380,14 +380,22 @@ int main() {
     int n = atoi(q.c_str());
 
     if(n == 0) {
-    
-        printf("0 0\n");
-        printf("4 2\n");
-        printf("6 4:7 4\n");
-        printf("3 7:3 8\n"); 
-        printf("7 7:7 9\n");
-        printf("1 4:4 4\n");
-        printf("4 0:8 0\n");
+
+printf("9 9\n"); 
+printf("9 8\n");
+printf("6 2:7 2\n"); 
+printf("3 7:3 8\n");
+printf("7 7:7 9\n");
+printf("1 2:4 2\n");
+printf("5 0:9 0\n");    
+
+//        printf("0 0\n");
+//        printf("4 2\n");
+//        printf("6 4:7 4\n");
+//        printf("3 7:3 8\n"); 
+//        printf("7 7:7 9\n");
+//        printf("1 4:4 4\n");
+//        printf("4 0:8 0\n");
     
     } else {
 
