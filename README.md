@@ -5,9 +5,10 @@ Each project contains its own directory. Here are short summaries of each projec
 
 * 8-Queens-GA: Solution for the 8-queens problem using genetic algorithms.  
 * N-Puzzle: Solution to the N-puzzle using A* search.
-* Battleship: Game player, uses probabilistic decision making. written in C++
-* bidding-tic-tac-toe: Game player, wildly different from classical tic-tac-toe with bidding strategies.
-* Checkers: Game player, alpha-beta pruning written in C++.
+* battleship: Game player, uses probabilistic decision making. written in C++
+* bidding-game: Game player, bidding tug of war.
+* bidding-tic-tac-toe: Game player, tic-tac-toe with bidding strategies.
+* checkers: Game player, alpha-beta pruning written in C++.
 * dead-end-isolation: Game player, a variant of isolation.
 * maze-escape: Game player, includes general solution to partially-observable maze escape problems, etc.
 * pacman: Game player, uses three search variants: A*, BFS, UCS to find food for pacman.
