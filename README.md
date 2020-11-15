@@ -9,6 +9,7 @@ Each project contains its own directory. Here are short summaries of each projec
 * bidding-game: Game player, bidding tug of war.
 * bidding-tic-tac-toe: Game player, tic-tac-toe with bidding strategies.
 * checkers: Game player, alpha-beta pruning written in C++.
+* connect-4: Game player, with simulation engine, written in python.
 * dead-end-isolation: Game player, a variant of isolation.
 * maze-escape: Game player, includes general solution to partially-observable maze escape problems, etc.
 * pacman: Game player, uses three search variants: A*, BFS, UCS to find food for pacman.
