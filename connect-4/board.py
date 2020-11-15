@@ -32,9 +32,10 @@ class Board:
         return legal_moves
 
         
-    def perform_move(self, player, col):
+    def perform_move(self, player, col, print_info=False):
   
-        print("Player color {} chose column {}".format(player, col))
+        if(print_info):
+            print("Player color {} chose column {}".format(player, col))
  
         assert(col >= 0 and col < N) 
         assert(player == self.player1 or player == self.player2)
@@ -78,6 +79,20 @@ class Board:
                 # check diagonals
                 if(x <= 4 and y <= 4 and self.check_this_direction(x, y, 1, 1)):
                     return True, (x, y, 'diag')
-
+        
         return False, None
+
+
+    def is_draw(self):
+        
+        game_over, how = self.game_over()
+        if(game_over):
+            return False
+        
+        else:
+            return len(self.get_legal_moves()) == 0 
+        
+
+
+
 
