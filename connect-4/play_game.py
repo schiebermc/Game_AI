@@ -4,7 +4,7 @@ from player import *
 from board import Board
 
 
-def play_connect_4(player1, player2, print_info=False):
+def play_connect_4(player1, player2, print_info=True):
 
     if(print_info):
         print("Starting a game..")
@@ -71,7 +71,6 @@ def simulate_games(player1, player2, N_games):
         else:
             raise Exception() 
 
-    
     draws_percentage = draws / float(N_games) * 100.
     player1_win_percentage = player1_wins / float(N_games) * 100.
     player2_win_percentage = player2_wins / float(N_games) * 100.
@@ -80,17 +79,17 @@ def simulate_games(player1, player2, N_games):
                 player1_wins, player2_wins, draws, player1_win_percentage, 
                 player2_win_percentage, draws_percentage))
 
-    
 
 if __name__ == "__main__":
 
     player1_char = 'R'
     player2_char = 'B'
 
-    player1 = RandomPlayer('R', 'B')
-    player2 = RandomPlayer('B', 'R')
+    #player1 = RandomPlayer('R', 'B')
+    player1 = MiniMaxPlayer('R', 'B', max_depth=1)
+    player2 = MiniMaxPlayer('B', 'R', max_depth=5)
    
-    simulate_games(player1, player2, 10000)
+    simulate_games(player1, player2, 1)
 
 #    winner, board, how = play_connect_4(player1, player2, print_info=True)
 #    board.print_board()
