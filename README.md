@@ -15,6 +15,7 @@ Each project contains its own directory. Here are short summaries of each projec
 * pacman: Game player, uses three search variants: A*, BFS, UCS to find food for pacman.
 * stock-trader: Game player, employs machine learning on stock data to construct intelligent trading strategies.
 * tic-tac-toe: Game player, classical tic-tac-toe using minimax decision making.
+* traveling-salesman: Framework, test cases, and solvers to TSP.
 * tron: Game player, turn-based two-player tron - minimax with alphabeta pruning decision making. 
 
 
