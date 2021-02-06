@@ -3,17 +3,18 @@ This module is currently a sandbox for trying out different solvers
 
 """
 import time
-import numpy as np
 from solvers import *
 from copy import deepcopy
 from collections import namedtuple
-import matplotlib.pyplot as plt
 from random import randint, seed
-from utils import totalDistance
+from utils import *
 
 TestSet = namedtuple("TestSet", ['points', 'n', 'm'])
 TestPackage = namedtuple("TestPackage", ['test_set_funs', 'algos'])
 
+###############################################################################
+###### Test Sets ##############################################################
+###############################################################################
 def generateTestSet1():
     # small enough for BruteForce to work (30s)
     n = m = 20
@@ -35,7 +36,7 @@ def generateTestSet2():
 def generateTestSet3():
     # larger, last one a python Branch and Bound solver can do (120s)
     n = m = 200
-    n_points = 500
+    n_points = 300
     seed(0)
     points = list(set([(randint(0, m-1), randint(0, n-1)) for ex in range(n_points)])) 
     return TestSet(points, n, m) 
@@ -45,27 +46,18 @@ def generateTestSet4():
     # larger, last one a python Branch and Bound solver can do (120s)
     n = 50
     m = 1000
-    n_points = 500
+    n_points = 250
     seed(0)
     points = list(set([(randint(0, m-1), randint(0, n-1)) for ex in range(n_points)])) 
     return TestSet(points, n, m) 
-
-
-def printDistanceAndPlot(points, name, total_time):
-    # plot the path, total distance, and time
-    total_distance = totalDistance(points)
-    plt.plot(*np.asarray(points).T, marker='s')
-    plt.title("Path Traveled Using Algorithm: {}\nTotal Distance: {} - Time: {:0.3e}".\
-        format(name, round(totalDistance(points), 2), total_time))
-    plt.show()
 
 
 if __name__ == "__main__":
 
     # define the tests you want to try
     test1 = TestPackage(
-                        [generateTestSet3, generateTestSet4],
-                        [HorizontalSortSolver, VerticalSortSolver, OriginSortSolver, NearestNeighborSolver]
+                        [generateTestSet3],
+                        [NearestNeighborSolver, NearestNeighborSolverParallel]
                         )
     
     for test_set_fun in test1.test_set_funs:

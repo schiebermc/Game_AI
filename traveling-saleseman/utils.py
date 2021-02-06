@@ -1,5 +1,7 @@
 from math import sqrt
+import numpy as np
 from typing import Tuple, List # necessary before 3.9
+import matplotlib.pyplot as plt
 
 Point = Tuple[int, int]
 Path = List[Point]
@@ -18,5 +20,29 @@ def totalDistance(path: Path) -> float:
             float: sum of distance travelled by the salesman on this route
     """
     return sum([distance(path[i], path[i+1]) for i in range(len(path)-1)])
+
+
+def printDistanceAndPlot(path: Path, name: str, total_time: float, figname: str=None) -> None:
+    """ computes distance and produces a plot of a path
+        
+        Args:
+            path: point-to-point path a salesman will travel
+            name: name of algorithm used to produce this path
+            total_time: total time for computing path 
+            figname: filename used to save plot, if any
+
+    """
+
+    # total distance
+    total_distance = totalDistance(path)
+
+    # plot and show
+    plt.plot(*np.asarray(path).T, marker='s')
+    plt.title("Path Traveled Using Algorithm: {}\nTotal Distance: {} - Time: {:0.3e}".\
+        format(name, round(total_distance, 2), total_time))
+    plt.show()
+
+    if figname:
+        pl.savefig(figname)
 
 
