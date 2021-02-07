@@ -20,13 +20,14 @@
         Greedy Solvers:
             - NearestNeighborSolver
             - NearestNeighborSolverParallel
-
+            - ChristofidesAlgorithmSolver (WIP)
 
 """
 import abc
 import concurrent.futures
 from copy import deepcopy
 import multiprocessing as mp
+from heapq import heappush, heappop
 from random import shuffle, seed, randint
 from collections import defaultdict
 from utils import distance, totalDistance
@@ -313,6 +314,7 @@ class HeldKarpSolver(BaseSolver):
 
     def hk(self, points):
 
+        # TODO not working, circle back to this
         # .. it's not quite right, and currently does not return path. 
         # so needs worked up.
 
@@ -354,5 +356,137 @@ class HeldKarpSolver(BaseSolver):
         # whoops, need to return the path associated with best, 
         # but that info was lost along the way. need to circle back to this
         return points
+
+
+class Graph():
+
+    # graph class to help some solvers
+    # uses adjacency list
+
+    def __init__(self, n):
+        self.n = n
+        self.edges = {i : {} for i in range(self.n)}
+
+    def addVertex(self, ident):
+        self.edges[ident] = {}
+        self.n += 1
+
+    def addUndirectedEdge(self, i, j, c):
+        self.addDirectedEdge(i, j, c)
+        self.addDirectedEdge(j, i, c)
+
+    def addDirectedEdge(self, i, j, c):
+        self.edges[i][j] = min(self.edges[i].get(j, float('inf')), c)
+
+    def PrimsMST(self):
+        # return the MST using Prim's algorithm
+        
+        # initialize unconnected graph
+        mst = Graph(self.n)
+
+        # special heappush for efficiency
+        def push(h, node1, active_set):
+            if node1 in active_set:
+                return
+            for node2 in self.edges[node1]:
+                if node2 in active_set:
+                    continue
+                heappush(h, (self.edges[node1][node2], node1, node2))            
+
+        # all candidate edges, sorted    
+        h = []
+        
+        # start with a random active vertex        
+        start = randint(0, self.n-1)
+        push(h, start, {})
+        active = set([start])
+
+        while(len(active) != self.n):
+    
+            # get the smallest edge from active vertices
+            while(h[0][1] in active and h[0][2] in active):
+                heappop(h) # this edge no longer relevant        
+    
+            dist, node1, node2 = heappop(h)
+           
+            # push edges to candidate queue
+            push(h, node1, active)
+            push(h, node2, active)
+
+            # add edges to active set
+            active.add(node1)
+            active.add(node2)
+            
+            # add edge to mst
+            mst.addUndirectedEdge(node1, node2, dist)
+                
+        return mst
+        
+
+class ChristofidesAlgorithmSolver(BaseSolver):
+    
+    name = "ChristofidesAlgorithm"
+    
+    # exact 
+    # TC: O(2^nsqrt(n))
+    
+    def __init__(self, n, m, points):
+        BaseSolver.__init__(self, n, m, points)
+
+    def computePath(self):
+        
+        k = len(self.points)
+        
+        # 1) construct complete graph
+        g = Graph(k)
+        for i in range(k):
+            for j in range(i+1, k):
+                g.addUndirectedEdge(i, j, distance(self.points[i], self.points[j]))
+
+        # 2) find MSP 
+        mst = g.PrimsMST()
+       
+        # 3) find set of verticies, O, with odd degree in mst
+        odds = set([])
+        for node in range(k):
+            if len(mst.edges[node]) % 2 == 1:
+                odds.add(node)
+
+        # 4) form complete subgraph using nodes in odds
+        mapper = {ind, val for ind, val in enumerate(odds)}
+        odds_subgraph = Graph()
+
+        # 5) contruct minimum-weight perfect matching of this subgraph 
+        #  - this is where things start to get tricky!
+        #  - remember: the operations leading up to 5) have gauranteed
+        #   that 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

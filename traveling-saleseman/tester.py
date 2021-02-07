@@ -51,13 +51,16 @@ def generateTestSet4():
     points = list(set([(randint(0, m-1), randint(0, n-1)) for ex in range(n_points)])) 
     return TestSet(points, n, m) 
 
+###############################################################################
+###### End Test Sets ##########################################################
+###############################################################################
 
 if __name__ == "__main__":
 
     # define the tests you want to try
     test1 = TestPackage(
-                        [generateTestSet3],
-                        [NearestNeighborSolver, NearestNeighborSolverParallel]
+                        [generateTestSet1],
+                        [ChristofidesAlgorithmSolver]
                         )
     
     for test_set_fun in test1.test_set_funs:

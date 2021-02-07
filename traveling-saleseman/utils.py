@@ -46,3 +46,6 @@ def printDistanceAndPlot(path: Path, name: str, total_time: float, figname: str=
         pl.savefig(figname)
 
 
+
+
+
