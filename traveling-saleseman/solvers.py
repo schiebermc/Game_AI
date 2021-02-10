@@ -29,7 +29,7 @@ from copy import deepcopy
 import multiprocessing as mp
 from heapq import heappush, heappop
 from random import shuffle, seed, randint
-from collections import defaultdict
+from collections import defaultdict, deque
 from utils import distance, totalDistance
 from itertools import permutations, combinations
 
@@ -421,17 +421,160 @@ class Graph():
             mst.addUndirectedEdge(node1, node2, dist)
                 
         return mst
+
+
+    def lowCostPerfectMatching(self):
+               
+        # Implementing what I am currently comfortable with, so it
+        # is not quite "minCost", but "lowCost". The outline is similar
+        # to Prim's above, in that we search edges based on the lowest
+        # cost. In this context, the greedy search is definitely an
+        # approximation. I will look into more advanced stuff later (Hungarian algo)
+        # This is a shortcut to achieve a working version of Christofides. 
+        # I underestimated how involved Christofides algo is in general xD 
+ 
+        # initialize unconnected graph
+        lcpm = Graph(self.n)
+
+        h = []
+        for node1 in self.edges:
+            for node2 in self.edges[node1]:
+                heappush(h, (self.edges[node1][node2], node1, node2))
+
+        active = set([])             
+        while(h and len(active) != self.n):
+            
+            # get the smallest edge from active vertices
+            while(h[0][1] in active or h[0][2] in active):
+                heappop(h)
+
+            dist, node1, node2 = heappop(h)
+           
+            # add edges to active set
+            active.add(node1)
+            active.add(node2)
+            
+            # add edge to mst
+            lcpm.addUndirectedEdge(node1, node2, dist)
+            
         
+        assert len(active) == len(lcpm.edges)
+        return lcpm
+   
+
+    def getOddVertices(self):
+        odds = set([])
+        for node in self.edges:
+            if len(self.edges[node]) % 2 == 1:
+                odds.add(node)
+        return odds
+
+    def reachableFromHere(self, src):
+        
+        # simple BFS for counting number of nodes in this component
+        visited = set([])
+        f = deque([src])
+        
+        while(f):
+
+            node = f.pop()
+            if node in visited:
+                continue
+            visited.add(node)
+            
+            for neighbor in self.edges[node]:
+                if neighbor in visited:
+                    continue
+                f.appendleft(neighbor)
+    
+        return len(visited)
+            
+
+    def isBridge(self, node1, node2):
+
+        # i wonder if disjoint sets are applicabable here? I am thinking no..
+        # since they do `union` and not `divorce` xD
+
+        c1 = self.reachableFromHere(node1)
+
+        # remove edge, count again, and put it back
+        tmp = self.edges[node1][node2]
+        
+        del self.edges[node1][node2]
+        del self.edges[node2][node1]
+        
+        c2 = self.reachableFromHere(node1)
+        
+        self.edges[node1][node2] = tmp
+        self.edges[node2][node1] = tmp
+
+        # if the count changes, an additional component was formed.
+        return c1 != c2
+
+ 
+    def EulerTour(self):
+        
+        # Fleury's Algorithm ~~
+        
+        # pick our starting point wisely
+        odds = self.getOddVertices()
+        print(odds)
+        assert len(odds) == 0 or len(odds) == 2
+        start = randint(0, len(self.edges)-1) if len(odds) == 0 else odds.pop()      
+
+        tour = []
+        while(self.edges[start]):
+        
+            next_edge = None
+            for node2 in self.edges[start]:
+
+                # if this edge forms a bridge, we must not use it
+                if self.isBridge(start, node2):
+                    continue
+
+                # great! no bridge, let's add it, and remove this edge
+                next_edge = (start, node2)    
+                break
+
+            if next_edge == None:
+                # there were no non-bridges, let's use the first bridge
+                for node2 in self.edges[start]:
+                    next_edge = (start, node2)    
+                    break
+
+            # remove this edge 
+            tour.append((start, node2))
+            del self.edges[start][node2]
+            del self.edges[node2][start]
+            start = node2
+
+        return tour 
+
+
+def shortcutEulerTour(tour):
+    shorted_tour = []   
+    visited = set([])
+    for node1, node2 in tour:
+        if not node1 in visited:
+            shorted_tour.append(node1)
+        if not node2 in visited:
+            shorted_tour.append(node2)
+        visited.add(node1)
+        visited.add(node2)
+    return shorted_tour 
+ 
 
 class ChristofidesAlgorithmSolver(BaseSolver):
     
     name = "ChristofidesAlgorithm"
     
-    # exact 
-    # TC: O(2^nsqrt(n))
+    # approximate
     
     def __init__(self, n, m, points):
         BaseSolver.__init__(self, n, m, points)
+        
+        # needed this for sanity. testing to follow
+        self.debug = True
 
     def computePath(self):
         
@@ -447,44 +590,39 @@ class ChristofidesAlgorithmSolver(BaseSolver):
         mst = g.PrimsMST()
        
         # 3) find set of verticies, O, with odd degree in mst
-        odds = set([])
-        for node in range(k):
-            if len(mst.edges[node]) % 2 == 1:
-                odds.add(node)
+        odds = mst.getOddVertices()
 
         # 4) form complete subgraph using nodes in odds
-        mapper = {ind, val for ind, val in enumerate(odds)}
-        odds_subgraph = Graph()
+
+        # need some indexing to convert back and form from reduced form to full
+        odds = list(odds)
+        mapper = {ind : val for ind, val in enumerate(odds)}
+        
+        odds_subgraph = Graph(len(mapper))
+        for i in range(len(odds)):
+            for j in range(i+1, len(odds)):
+                odds_subgraph.addUndirectedEdge(i, j, 
+                    distance(self.points[mapper[i]], self.points[mapper[j]])) 
 
         # 5) contruct minimum-weight perfect matching of this subgraph 
-        #  - this is where things start to get tricky!
-        #  - remember: the operations leading up to 5) have gauranteed
-        #   that 
+        M = odds_subgraph.lowCostPerfectMatching()
 
+        if self.debug:
+            print("\nPrinting perfect matching:")
+            for edge in M.edges:
+                print(edge, M.edges[edge])
 
+        # 6) Unite matching and spanning trees (mst U M)
+        for node1 in mapper:
+            for node2 in M.edges[node1]:
+                mst.addUndirectedEdge(mapper[node1], 
+                        mapper[node2], M.edges[node1][node2])
+        
+        # 7) Calculate the Euler tour    
+        Etour = mst.EulerTour()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        # 8) take out duplicates, shortcut
+        return [self.points[ind] for ind in shortcutEulerTour(Etour)]
 
 
 

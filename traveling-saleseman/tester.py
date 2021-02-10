@@ -34,16 +34,14 @@ def generateTestSet2():
 
 
 def generateTestSet3():
-    # larger, last one a python Branch and Bound solver can do (120s)
-    n = m = 200
-    n_points = 300
+    n = m = 100
+    n_points = 10
     seed(0)
     points = list(set([(randint(0, m-1), randint(0, n-1)) for ex in range(n_points)])) 
     return TestSet(points, n, m) 
 
 
 def generateTestSet4():
-    # larger, last one a python Branch and Bound solver can do (120s)
     n = 50
     m = 1000
     n_points = 250
@@ -59,8 +57,8 @@ if __name__ == "__main__":
 
     # define the tests you want to try
     test1 = TestPackage(
-                        [generateTestSet1],
-                        [ChristofidesAlgorithmSolver]
+                        [generateTestSet1, generateTestSet2],
+                        [NearestNeighborSolver, ChristofidesAlgorithmSolver]
                         )
     
     for test_set_fun in test1.test_set_funs:
