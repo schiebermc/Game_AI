@@ -1,3 +1,4 @@
+import itertools
 from math import sqrt
 import numpy as np
 from typing import Tuple, List # necessary before 3.9
@@ -45,7 +46,13 @@ def printDistanceAndPlot(path: Path, name: str, total_time: float, figname: str=
     if figname:
         pl.savefig(figname)
 
-
+def generate_groups(lst, n=2):
+    if not lst:
+        yield []
+    else:
+        for group in (((lst[0],) + xs) for xs in itertools.combinations(lst[1:], n-1)):
+            for groups in generate_groups([x for x in lst if x not in group], n):
+                yield [group] + groups
 
 
 

@@ -2,6 +2,7 @@
     Solvers for TSP by Matthew Schieber
     All implementations by me, with motivation from: 
         https://en.wikipedia.org/wiki/Travelling_salesman_problem
+      ( and other online resources )
     
     Please make any suggestions at https://github.com/schiebermc/Game_AI
 
@@ -30,7 +31,7 @@ import multiprocessing as mp
 from heapq import heappush, heappop
 from random import shuffle, seed, randint
 from collections import defaultdict, deque
-from utils import distance, totalDistance
+from utils import *
 from itertools import permutations, combinations
 
 class BaseSolver(abc.ABC):
@@ -460,7 +461,30 @@ class Graph():
         
         assert len(active) == len(lcpm.edges)
         return lcpm
-   
+
+    def minCostPerfectMatching(self):
+        # here I implement the exact soluion using combinatorics. 
+        # i need proof of concept before I rush and tacke the 
+        # Hungarian algorithm.
+        
+        def costOfMatching(matching):
+            summ = 0
+            for i, j in matching:
+                summ += self.edges[i][j]
+            return summ        
+    
+        best = [float('inf'), None]
+        for matching in generate_groups([i for i in range(self.n)]):
+            cost = costOfMatching(matching)
+            if cost < best[0]:
+                best = [cost, matching]
+ 
+        mcpm = Graph(self.n)
+        for i, j in best[1]:
+            mcpm.addUndirectedEdge(i, j, self.edges[i][j])
+        
+        return mcpm
+
 
     def getOddVertices(self):
         odds = set([])
@@ -468,6 +492,60 @@ class Graph():
             if len(self.edges[node]) % 2 == 1:
                 odds.add(node)
         return odds
+
+
+class MultiGraph():
+
+    # needed to make a multigraph class too!
+    # turns out, after trial and error, that the Euler tour calculation
+    # requires that step 6 in Christofides requires union of the mst
+    # and perfect matching to be a multigraph! To quickly move around
+    # this issue, I partitioned the graph functions to what can be
+    # done by a Graph and MultiGraph, respectively. I will try 
+    # to comb through and organize better latter, but no promises!
+
+    def __init__(self, n, graph=None):
+        
+        self.n = n
+        self.edges = {i : defaultdict(list) for i in range(self.n)}
+
+        if graph:
+            for node1 in graph.edges:
+                for node2 in graph.edges[node1]:
+                    self.addUndirectedEdge(node1, 
+                        node2, graph.edges[node1][node2])
+
+    def addVertex(self, ident):
+        self.edges[ident] = {}
+        self.n += 1
+
+    def addUndirectedEdge(self, i, j, c):
+        self.addDirectedEdge(i, j, c)
+        self.addDirectedEdge(j, i, c)
+    
+    def addDirectedEdge(self, i, j, c):
+        self.edges[i][j].append(c)
+
+    def removeAnEdge(self, i, j):
+        # remove one of the edges between i and j. since
+        # I am implementing this multigraph on the fly, i   
+        # am not adding edge ids. The needed applications
+        # do not require such features
+       
+        # since cost doesn't matter, just remove one
+        # in theory, the adds were not interleaved, so pops
+        # should at least target the same edge for both nodes
+        val1 = self.edges[i][j].pop() 
+        val2 = self.edges[j][i].pop()
+        
+        # if that was the last one, delete this key (breaking condition)
+        if len(self.edges[i][j]) == 0:
+            del self.edges[i][j]
+        if len(self.edges[j][i]) == 0:
+            del self.edges[j][i]
+        
+        assert val1 == val2
+        return val1
 
     def reachableFromHere(self, src):
         
@@ -498,18 +576,23 @@ class Graph():
         c1 = self.reachableFromHere(node1)
 
         # remove edge, count again, and put it back
-        tmp = self.edges[node1][node2]
-        
-        del self.edges[node1][node2]
-        del self.edges[node2][node1]
-        
+        tmp = self.removeAnEdge(node1, node2)            
         c2 = self.reachableFromHere(node1)
-        
-        self.edges[node1][node2] = tmp
-        self.edges[node2][node1] = tmp
+        self.addUndirectedEdge(node1, node2, tmp) 
 
         # if the count changes, an additional component was formed.
         return c1 != c2
+
+
+    def getOddVertices(self):
+        odds = set([])
+        for node in self.edges:
+            summ = 0
+            for node2 in self.edges[node]:
+                summ += len(self.edges[node][node2])
+            if summ % 2 == 1:
+                odds.add(node)
+        return odds
 
  
     def EulerTour(self):
@@ -518,7 +601,6 @@ class Graph():
         
         # pick our starting point wisely
         odds = self.getOddVertices()
-        print(odds)
         assert len(odds) == 0 or len(odds) == 2
         start = randint(0, len(self.edges)-1) if len(odds) == 0 else odds.pop()      
 
@@ -542,10 +624,13 @@ class Graph():
                     next_edge = (start, node2)    
                     break
 
-            # remove this edge 
+            # add this edge to our tour
             tour.append((start, node2))
-            del self.edges[start][node2]
-            del self.edges[node2][start]
+            
+            # remove this edge (could be one of many, we are a MultiGraph now)
+            self.removeAnEdge(start, node2)            
+            
+            # restart from destination
             start = node2
 
         return tour 
@@ -574,12 +659,17 @@ class ChristofidesAlgorithmSolver(BaseSolver):
         BaseSolver.__init__(self, n, m, points)
         
         # needed this for sanity. testing to follow
-        self.debug = True
+        self.debug = False
 
     def computePath(self):
         
         k = len(self.points)
-        
+       
+        if self.debug:
+            print("\nPrinting points")
+            for i in range(k):
+                print(i, self.points[i])
+ 
         # 1) construct complete graph
         g = Graph(k)
         for i in range(k):
@@ -593,6 +683,13 @@ class ChristofidesAlgorithmSolver(BaseSolver):
         odds = mst.getOddVertices()
 
         # 4) form complete subgraph using nodes in odds
+        if self.debug:
+            print("\nPrinting mst of completely connected graph")
+            for edge in mst.edges:
+                print(edge, mst.edges[edge])
+            
+            print("\nOdd vertices:")
+            print(odds)
 
         # need some indexing to convert back and form from reduced form to full
         odds = list(odds)
@@ -605,21 +702,30 @@ class ChristofidesAlgorithmSolver(BaseSolver):
                     distance(self.points[mapper[i]], self.points[mapper[j]])) 
 
         # 5) contruct minimum-weight perfect matching of this subgraph 
-        M = odds_subgraph.lowCostPerfectMatching()
+        M = odds_subgraph.minCostPerfectMatching()
 
         if self.debug:
+            print("\nMapping from full to subgraph:")
+            print(mapper)
+
             print("\nPrinting perfect matching:")
             for edge in M.edges:
                 print(edge, M.edges[edge])
 
         # 6) Unite matching and spanning trees (mst U M)
+        united_multigraph = MultiGraph(k, mst)
         for node1 in mapper:
             for node2 in M.edges[node1]:
-                mst.addUndirectedEdge(mapper[node1], 
+                united_multigraph.addUndirectedEdge(mapper[node1], 
                         mapper[node2], M.edges[node1][node2])
         
+        if self.debug:
+            print("\nPrinting united graph of MST and perfect matching")
+            for edge in mst.edges:
+                print(edge, united_multigraph.edges[edge])
+ 
         # 7) Calculate the Euler tour    
-        Etour = mst.EulerTour()
+        Etour = united_multigraph.EulerTour()
 
         # 8) take out duplicates, shortcut
         return [self.points[ind] for ind in shortcutEulerTour(Etour)]
