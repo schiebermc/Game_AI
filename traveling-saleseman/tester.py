@@ -35,16 +35,25 @@ def generateTestSet2():
 
 def generateTestSet3():
     n = m = 100
-    n_points = 30
+    n_points = 35
     seed(0)
     points = list(set([(randint(0, m-1), randint(0, n-1)) for ex in range(n_points)])) 
     return TestSet(points, n, m) 
 
 
 def generateTestSet4():
-    n = 50
+    n = 1000
     m = 1000
-    n_points = 250
+    n_points = 300
+    seed(0)
+    points = list(set([(randint(0, m-1), randint(0, n-1)) for ex in range(n_points)])) 
+    return TestSet(points, n, m) 
+
+
+def generateTestSet5():
+    n = 10000
+    m = 10000
+    n_points = 500
     seed(0)
     points = list(set([(randint(0, m-1), randint(0, n-1)) for ex in range(n_points)])) 
     return TestSet(points, n, m) 
@@ -57,7 +66,7 @@ if __name__ == "__main__":
 
     # define the tests you want to try
     test1 = TestPackage(
-                        [generateTestSet3],
+                        [generateTestSet4],
                         [NearestNeighborSolver, ChristofidesAlgorithmSolver]
                         )
     

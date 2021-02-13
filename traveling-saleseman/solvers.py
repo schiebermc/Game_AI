@@ -462,9 +462,10 @@ class Graph():
         assert len(active) == len(lcpm.edges)
         return lcpm
 
+
     def minCostPerfectMatching(self):
-        # here I implement the exact soluion using combinatorics. 
-        # i need proof of concept before I rush and tacke the 
+        # Here, I implement the exact solution using combinatorics. 
+        # However, this can be solved in polynomial time using the 
         # Hungarian algorithm.
         
         def costOfMatching(matching):
@@ -510,10 +511,12 @@ class MultiGraph():
         self.edges = {i : defaultdict(list) for i in range(self.n)}
 
         if graph:
-            for node1 in graph.edges:
+            for node1 in range(self.n):
                 for node2 in graph.edges[node1]:
-                    self.addUndirectedEdge(node1, 
-                        node2, graph.edges[node1][node2])
+                    # apply symmetry so we do not duplicate nodes..
+                    if node1 < node2:
+                        self.addUndirectedEdge(node1, 
+                            node2, graph.edges[node1][node2])
 
     def addVertex(self, ident):
         self.edges[ident] = {}
@@ -624,11 +627,13 @@ class MultiGraph():
                     next_edge = (start, node2)    
                     break
 
+            node1, node2 = next_edge
+
             # add this edge to our tour
-            tour.append((start, node2))
+            tour.append((node1, node2))
             
             # remove this edge (could be one of many, we are a MultiGraph now)
-            self.removeAnEdge(start, node2)            
+            self.removeAnEdge(node1, node2)            
             
             # restart from destination
             start = node2
@@ -637,6 +642,8 @@ class MultiGraph():
 
 
 def shortcutEulerTour(tour):
+    # note: This yields a Hamiltonian cycle, since we can 
+    # assume that the original TSP graph is complete
     shorted_tour = []   
     visited = set([])
     for node1, node2 in tour:
@@ -702,7 +709,7 @@ class ChristofidesAlgorithmSolver(BaseSolver):
                     distance(self.points[mapper[i]], self.points[mapper[j]])) 
 
         # 5) contruct minimum-weight perfect matching of this subgraph 
-        M = odds_subgraph.minCostPerfectMatching()
+        M = odds_subgraph.lowCostPerfectMatching()
 
         if self.debug:
             print("\nMapping from full to subgraph:")
@@ -716,7 +723,9 @@ class ChristofidesAlgorithmSolver(BaseSolver):
         united_multigraph = MultiGraph(k, mst)
         for node1 in mapper:
             for node2 in M.edges[node1]:
-                united_multigraph.addUndirectedEdge(mapper[node1], 
+                # apply symmetry so we don't duplicate
+                if mapper[node1] < mapper[node2]:
+                    united_multigraph.addUndirectedEdge(mapper[node1], 
                         mapper[node2], M.edges[node1][node2])
         
         if self.debug:
