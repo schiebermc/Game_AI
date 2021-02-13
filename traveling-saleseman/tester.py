@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
             # evaluate
             printDistanceAndPlot(points, solver.name, total_time, 
-                    test_set_fun.__name__ + '_' + class_name.__name__ + '.jpeg')
+                    test_set_fun.__name__ + '_' + class_name.__name__ + '.png')
 
 
 

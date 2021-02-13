@@ -41,10 +41,12 @@ def printDistanceAndPlot(path: Path, name: str, total_time: float, figname: str=
     plt.plot(*np.asarray(path).T, marker='s')
     plt.title("Path Traveled Using Algorithm: {}\nTotal Distance: {} - Time: {:0.3e}".\
         format(name, round(total_distance, 2), total_time))
-    plt.show()
-
+    
     if figname:
         plt.savefig(figname)
+    
+    plt.show()
+
 
 
 def generate_groups(lst, n=2):
