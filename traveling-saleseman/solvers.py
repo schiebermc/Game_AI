@@ -430,9 +430,7 @@ class Graph():
         # is not quite "minCost", but "lowCost". The outline is similar
         # to Prim's above, in that we search edges based on the lowest
         # cost. In this context, the greedy search is definitely an
-        # approximation. I will look into more advanced stuff later (Hungarian algo)
-        # This is a shortcut to achieve a working version of Christofides. 
-        # I underestimated how involved Christofides algo is in general xD 
+        # approximation. 
  
         # initialize unconnected graph
         lcpm = Graph(self.n)
@@ -466,7 +464,6 @@ class Graph():
     def minCostPerfectMatching(self):
         # Here, I implement the exact solution using combinatorics. 
         # However, this can be solved in polynomial time using the 
-        # Hungarian algorithm.
         
         def costOfMatching(matching):
             summ = 0
@@ -485,7 +482,7 @@ class Graph():
             mcpm.addUndirectedEdge(i, j, self.edges[i][j])
         
         return mcpm
-
+    
 
     def getOddVertices(self):
         odds = set([])

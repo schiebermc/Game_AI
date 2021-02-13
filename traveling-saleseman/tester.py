@@ -15,7 +15,7 @@ TestPackage = namedtuple("TestPackage", ['test_set_funs', 'algos'])
 ###############################################################################
 ###### Test Sets ##############################################################
 ###############################################################################
-def generateTestSet1():
+def testSet1():
     # small enough for BruteForce to work (30s)
     n = m = 20
     n_points = 10
@@ -24,7 +24,7 @@ def generateTestSet1():
     return TestSet(points, n, m) 
 
 
-def generateTestSet2():
+def testSet2():
     # larger, last one a python Branch and Bound solver can do (120s)
     n = m = 50
     n_points = 12
@@ -33,7 +33,7 @@ def generateTestSet2():
     return TestSet(points, n, m) 
 
 
-def generateTestSet3():
+def testSet3():
     n = m = 100
     n_points = 35
     seed(0)
@@ -41,7 +41,7 @@ def generateTestSet3():
     return TestSet(points, n, m) 
 
 
-def generateTestSet4():
+def testSet4():
     n = 1000
     m = 1000
     n_points = 300
@@ -50,10 +50,10 @@ def generateTestSet4():
     return TestSet(points, n, m) 
 
 
-def generateTestSet5():
+def testSet5():
     n = 10000
     m = 10000
-    n_points = 500
+    n_points = 1000
     seed(0)
     points = list(set([(randint(0, m-1), randint(0, n-1)) for ex in range(n_points)])) 
     return TestSet(points, n, m) 
@@ -66,8 +66,8 @@ if __name__ == "__main__":
 
     # define the tests you want to try
     test1 = TestPackage(
-                        [generateTestSet4],
-                        [NearestNeighborSolver, ChristofidesAlgorithmSolver]
+                        [testSet3, testSet4, testSet5],
+                        [OriginSortSolver, NearestNeighborSolver, ChristofidesAlgorithmSolver]
                         )
     
     for test_set_fun in test1.test_set_funs:
@@ -87,7 +87,8 @@ if __name__ == "__main__":
             total_time = time.time() - t0        
 
             # evaluate
-            printDistanceAndPlot(points, solver.name, total_time)
+            printDistanceAndPlot(points, solver.name, total_time, 
+                    test_set_fun.__name__ + '_' + class_name.__name__ + '.jpeg')
 
 
 

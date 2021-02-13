@@ -44,7 +44,8 @@ def printDistanceAndPlot(path: Path, name: str, total_time: float, figname: str=
     plt.show()
 
     if figname:
-        pl.savefig(figname)
+        plt.savefig(figname)
+
 
 def generate_groups(lst, n=2):
     if not lst:
