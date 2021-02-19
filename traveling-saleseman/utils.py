@@ -23,12 +23,14 @@ def totalDistance(path: Path) -> float:
     return sum([distance(path[i], path[i+1]) for i in range(len(path)-1)])
 
 
-def printDistanceAndPlot(path: Path, name: str, total_time: float, figname: str=None) -> None:
+def printDistanceAndPlot(path: Path, solver_name: str, 
+        test_name: str, total_time: float, figname: str=None) -> None:
     """ computes distance and produces a plot of a path
         
         Args:
             path: point-to-point path a salesman will travel
-            name: name of algorithm used to produce this path
+            solver_name: name of algorithm used to produce this path
+            test_name: name of test set
             total_time: total time for computing path 
             figname: filename used to save plot, if any
 
@@ -39,12 +41,14 @@ def printDistanceAndPlot(path: Path, name: str, total_time: float, figname: str=
 
     # plot and show
     plt.plot(*np.asarray(path).T, marker='s')
-    plt.title("Path Traveled Using Algorithm: {}\nTotal Distance: {} - Time: {:0.3e}".\
-        format(name, round(total_distance, 2), total_time))
+    plt.title("Path Traveled Using Algorithm: {}\nTest Set Name: {}\nTotal Distance: {} - Time: {:0.3e}".\
+        format(solver_name, test_name, round(total_distance, 2), total_time))
     
+    plt.tight_layout()
     if figname:
         plt.savefig(figname)
-    
+   
+     
     plt.show()
 
 

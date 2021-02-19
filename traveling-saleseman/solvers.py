@@ -21,7 +21,7 @@
         Greedy Solvers:
             - NearestNeighborSolver
             - NearestNeighborSolverParallel
-            - ChristofidesAlgorithmSolver (WIP)
+            - ChristofidesAlgorithmSolver 
 
 """
 import abc
@@ -734,7 +734,17 @@ class ChristofidesAlgorithmSolver(BaseSolver):
         Etour = united_multigraph.EulerTour()
 
         # 8) take out duplicates, shortcut
-        return [self.points[ind] for ind in shortcutEulerTour(Etour)]
+        ans = [self.points[ind] for ind in shortcutEulerTour(Etour)]
+
+        # 9) (my addition) return the best cyclic permutation of the tour
+        best = [float("inf"), None]
+        for i in range(len(ans)):
+            this_perm = ans[i:] + ans[:i] 
+            dist = totalDistance(this_perm)
+            if dist < best[0]:
+                best = [dist, this_perm]
+        
+        return best[1]
 
 
 
