@@ -25,24 +25,34 @@ Below are some solutions to TSP for different test sets.
 For each test set, I list the results of three different solvers: "OriginSortSolver", "NearestNeighborSolver", and "ChristofidesAlgorithmSolver".  Each of these are approximation algorithms for TSP. I also implemented some exact solutions, but these kernels do not scale up to any interesting problems. 
 
 
-The results are separated by the number of (cities, points, nodes, etc.) in the problem.
+## Uniformly Distributed Points 
 
 ## N_cities = 50
 
-![](figures/testSet3_OriginSortSolver.png)
-![](figures/testSet3_NearestNeighborSolver.png)
-![](figures/testSet3_ChristofidesAlgorithmSolver.png)
+![](figures/testSetRandomUniform3_OriginSortSolver.png)
+![](figures/testSetRandomUniform3_NearestNeighborSolver.png)
+![](figures/testSetRandomUniform3_ChristofidesAlgorithmSolver.png)
 
 ## N_cities = 300
 
-![](figures/testSet4_OriginSortSolver.png)
-![](figures/testSet4_NearestNeighborSolver.png)
-![](figures/testSet4_ChristofidesAlgorithmSolver.png)
+![](figures/testSetRandomUniform4_OriginSortSolver.png)
+![](figures/testSetRandomUniform4_NearestNeighborSolver.png)
+![](figures/testSetRandomUniform4_ChristofidesAlgorithmSolver.png)
 
 ## N_cities = 1000
 
-![](figures/testSet5_OriginSortSolver.png)
-![](figures/testSet5_NearestNeighborSolver.png)
-![](figures/testSet5_ChristofidesAlgorithmSolver.png)
+![](figures/testSetRandomUniform5_OriginSortSolver.png)
+![](figures/testSetRandomUniform5_NearestNeighborSolver.png)
+![](figures/testSetRandomUniform5_ChristofidesAlgorithmSolver.png)
 
-In these examples, it is clear the origin sort algorithm is the worst of the three. The Nearest Neighbor and Christofides algorithms are very comparable in both quality of solutions and computation times. Although I would consider these two algorithms incomparable in level of implementation difficulty (Christofides was much, much harder xD).
+In these examples, it is clear the origin sort algorithm is the worst of the three. The Nearest Neighbor and Christofides algorithms are comparable in both quality of solutions and computation times. The Christofides algorithm typically outperforms the Nearest Neighbor solver. 
+
+## A Circle  
+![](figures/testSetCircle1_OriginSortSolver.png)
+![](figures/testSetCircle1_NearestNeighborSolver.png)
+![](figures/testSetCircle1_ChristofidesAlgorithmSolver.png)
+
+## Linearly Separable Cities 
+![](figures/testSetTwoDisjointCities1_OriginSortSolver.png)
+![](figures/testSetTwoDisjointCities1_NearestNeighborSolver.png)
+![](figures/testSetTwoDisjointCities1_ChristofidesAlgorithmSolver.png)
