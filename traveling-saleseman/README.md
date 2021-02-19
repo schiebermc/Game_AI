@@ -45,8 +45,6 @@ For each test set, I list the results of three different solvers: "OriginSortSol
 ![](figures/testSetRandomUniform5_NearestNeighborSolver.png)
 ![](figures/testSetRandomUniform5_ChristofidesAlgorithmSolver.png)
 
-In these examples, it is clear the origin sort algorithm is the worst of the three. The Nearest Neighbor and Christofides algorithms are comparable in both quality of solutions and computation times. The Christofides algorithm typically outperforms the Nearest Neighbor solver. 
-
 ## A Circle  
 ![](figures/testSetCircle1_OriginSortSolver.png)
 ![](figures/testSetCircle1_NearestNeighborSolver.png)
@@ -56,3 +54,7 @@ In these examples, it is clear the origin sort algorithm is the worst of the thr
 ![](figures/testSetTwoDisjointCities1_OriginSortSolver.png)
 ![](figures/testSetTwoDisjointCities1_NearestNeighborSolver.png)
 ![](figures/testSetTwoDisjointCities1_ChristofidesAlgorithmSolver.png)
+
+
+
+In these examples, it is clear the origin sort algorithm is the worst of the three. The Nearest Neighbor and Christofides algorithms are comparable in both quality of solutions and computation times. The Christofides algorithm typically outperforms the Nearest Neighbor solver. 
