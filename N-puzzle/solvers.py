@@ -63,7 +63,8 @@ class UnidirectionalSolver:
         self.board = board
         self.heuristic_computer = heuristic()
         print("Using solver: {}".format(self.name()))
- 
+
+
     def get_tile_tup(self, board):
         tup = []
         for row in range(self.board.rows):
@@ -76,12 +77,12 @@ class UnidirectionalSolver:
     def get_solution(self):
         
         visited = set([])
-        f = [((self.heuristic_computer.compute_heuristic(self.board.tiles),\
-             [], deepcopy(self.board)))]
+        new_h = self.heuristic_computer.compute_heuristic(self.board.tiles)
+        f = [((new_h, new_h, [], deepcopy(self.board)))]
         
         while(len(f) > 0):
 
-            h, path, board = heappop(f)
+            h, cost, path, board = heappop(f)
 
             if h == 0:
                 return len(visited), path
@@ -97,7 +98,7 @@ class UnidirectionalSolver:
                                 not self.get_tile_tup(new_board) in visited:
                     new_h = self.heuristic_computer.compute_heuristic(\
                                                 new_board.tiles)
-                    heappush(f, (new_h, path + [move], new_board))
+                    heappush(f, (new_h, new_h, path + [move], new_board))
 
     
     def name(self):

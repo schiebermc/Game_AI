@@ -10,29 +10,54 @@ class Tile:
         so they must be responsible for drawing themselves.
     """
 
-    def __init__(self, val, x, y, w, l):
+    def __init__(self, val, x, y, w, l, n):
         self.val = val
         self.x = x
         self.y = y
         self.w = w
         self.l = l
+        self.board_size = n
 
     def draw_tile(self, window):
-        if self.val == 0:
+
+        val = self.val
+        if val == 0:
             pygame.draw.rect(window, GREY, (self.x, self.y, self.w, self.l))
         else:
-            val = self.val
-            font = pygame.font.SysFont('arial', 100)
-            text = font.render(str(val), True, BLACK)
             
+            # manual calibrations for board sizes
+            if self.board_size <= 4:
+                font = pygame.font.SysFont('arial', 100)
+                if int(val) >= 10:
+                    draw_x = self.x + self.w // 7 
+                    draw_y = self.y + self.l // 4
+                else:
+                    draw_x = self.x + self.w // 3 
+                    draw_y = self.y + self.l // 4
             
-            if int(val) >= 10:
-                draw_x = self.x + self.w // 7 
-                draw_y = self.y + self.l // 4
-            else:
-                draw_x = self.x + self.w // 3 
-                draw_y = self.y + self.l // 4
+            elif self.board_size == 5:
+                font = pygame.font.SysFont('arial', 80)
+                if int(val) >= 10:
+                    draw_x = self.x + self.w // 9 
+                    draw_y = self.y + self.l // 6
+                else:
+                    draw_x = self.x + self.w // 3 
+                    draw_y = self.y + self.l // 6
  
+            elif self.board_size == 6:
+                font = pygame.font.SysFont('arial', 60)
+                if int(val) >= 10:
+                    draw_x = self.x + self.w // 9 
+                    draw_y = self.y + self.l // 6
+                else:
+                    draw_x = self.x + self.w // 3 
+                    draw_y = self.y + self.l // 6
+
+            else:
+                raise Exception("Not calibrated for board size: {}"\
+                    .format(self.board_size))
+
+            text = font.render(str(val), True, BLACK)
             window.blit(text, (draw_x, draw_y))
                     
     def __repr__(self):
@@ -82,7 +107,7 @@ class Board:
                         col * (self.tile_width + self.INNER_BORDER_SIZE),
                     self.OUTER_BORDER_SIZE + \
                         row * (self.tile_height + self.INNER_BORDER_SIZE), 
-                        self.tile_width, self.tile_height))
+                        self.tile_width, self.tile_height, self.rows))
 
         # to ensure our board has a solution, we start with the solved state
         # and randomize it according to legal moves. This is important, since
