@@ -25,6 +25,7 @@
 
 """
 import abc
+from math import ceil
 import concurrent.futures
 from copy import deepcopy
 import multiprocessing as mp
@@ -746,7 +747,103 @@ class ChristofidesAlgorithmSolver(BaseSolver):
         
         return best[1]
 
+class TSPGACreature():
+
+    def __init__(self, points):
+        
+        # random generation of paths
+        self.path = [val for val in range(len(points))]
+        shuffle(self.path)
+
+    def getPath(self, points):
+        return [points[i] for i in self.path]
+
+class TSPBaseHeuristic(abc.ABC):
+
+    def __init__(self):
+        pass
+
+    @abc.abstractmethod
+    def computeHeuristic(self, path):
+        pass
 
 
+class TSPEuclidianDitanceHueristic(TSPBaseHeuristic):        
+
+    def __init__(self):
+        TSPBaseHeuristic.__init__(self)
+
+    def computeHeuristic(self, path):
+        return totalDistance(path)
+
+
+class TSPGAPopulation():
+
+    def __init__(self, n, m, points, popsize=100, cullrate=.9):
+        
+        # population parameters
+        self.n = n
+        self.m = m
+        self.points = points
+        self.popsize = 100
+        self.cullrate = cullrate
+
+        assert self.cullrate <= 1.0 and self.cullrate > 0.
+        self.cull_amount = ceil(self.cullrate * self.popsize)
+
+        # generate population
+        self.population = []
+        for creature in range(self.popsize):
+            self.population.append(TSPGACreature(points))
+
+        # this could be a parameter..
+        self.heuristic_computer = TSPEuclidianDitanceHueristic()
+
+
+    def getSortedCreatures(self):
+        
+        heuristics_and_creatures = [
+            (self.heuristic_computer.computeHeuristic(
+            creature.getPath(self.points)), creature) 
+            for creature in self.population
+                                   ]
+        heuristics_and_creatures.sort(key=lambda x : x[0])
+        return heuristics_and_creatures
+
+
+    def getTopCreature(self):
+        return self.getSortedCreatures()[-1][1].getPath(self.points)      
+
+    
+    def propogate(self):
+
+        # 1) get sorted creatures by designated heuristic
+        heuristics_and_creatures = self.getSortedCreatures()
+
+        # 2) cull the lower ranked creatures of the populations
+        remaining_creatures = [creature for heuristic, creature in 
+                                heuristics_and_creatures[self.cull_amount:]]
+
+        # 3) crossing over and mutations (rather strange in this context)
+        
+
+class GenticAlgorithmSolver(BaseSolver):
+    
+    name = "GenticAlgorithmSolver"
+    
+    # approximate
+    
+    def __init__(self, n, m, points, max_generations=5):
+        BaseSolver.__init__(self, n, m, points)
+        
+        self.max_generations = max_generations
+        self.population = TSPGAPopulation(n, m, points)
+
+    def computePath(self):
+       
+        for gen in range(self.max_generations):
+            self.population.propogate()
+
+        return self.population.getTopCreature()
 
 

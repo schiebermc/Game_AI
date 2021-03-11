@@ -103,6 +103,7 @@ def testSetTwoDisjointCities1():
     return TestSet(points, n, m)    
 
 
+
 ###############################################################################
 ###### End Test Sets ##########################################################
 ###############################################################################
@@ -111,9 +112,8 @@ if __name__ == "__main__":
 
     # define the tests you want to try
     test1 = TestPackage(
-                        [testSetCircle1, testSetTwoDisjointCities1, 
-                         testSetRandomUniform3, testSetRandomUniform4, testSetRandomUniform5],
-                        [OriginSortSolver, NearestNeighborSolver, ChristofidesAlgorithmSolver]
+                        [testSetRandomUniform4], 
+                        [GenticAlgorithmSolver]
                         )
     
     for test_set_fun in test1.test_set_funs:
