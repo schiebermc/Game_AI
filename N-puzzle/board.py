@@ -51,9 +51,9 @@ class Board:
                   "UP"    : (-1, 0)
                 }
 
-    def __init__(self, n, board=None, random_shifts=100):
+    def __init__(self, n, board=None, random_shifts=1000, board_prints=True):
        
-        self.board_prints = True
+        self.board_prints = board_prints
  
         self.board = board if board != None else [i for i in range(n*n)]
         self.rows = n
@@ -92,7 +92,7 @@ class Board:
         for shift in range(random_shifts):
             move = sample(all_pos, 1)[0]
             self.forecast_move(move)
-
+        print(self.tiles)
 
     def draw(self, window):
         window.fill(WHITE)
@@ -159,7 +159,8 @@ class Board:
         row2, col2 = row + x, col + y
         
         if row2 < 0 or col2 < 0 or row2 >= self.rows or col2 >= self.cols:
-            print("Impossible move passed") 
+            if self.board_prints:
+                print("Impossible move passed") 
             return False
         else:
             self.tiles[row][col].val = self.tiles[row2][col2].val
