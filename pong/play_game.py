@@ -44,14 +44,15 @@ def main():
             
             else:
                 board.forecast_move()
+        
+            board.draw(WINDOW)
+            instructions(WINDOW)
+            pygame.display.update()
  
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 run = False
  
-        board.draw(WINDOW)
-        instructions(WINDOW)
-        pygame.display.update()
     
 
     pygame.quit()

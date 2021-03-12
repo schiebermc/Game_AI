@@ -6,16 +6,16 @@ from random import randint
 class Player():
 
     BLOCK_LENGTH = 100
-    BLOCK_HEIGHT = 10
+    BLOCK_HEIGHT = 30
 
     DIRECTIONS = {
-                    "LEFT"  : -5, 
-                    "RIGHT" : 5,
+                    "LEFT"  : -8, 
+                    "RIGHT" : 8,
                     "NONE" : 0
                  }
 
     def __init__(self, y_plane, left_bound, right_bound):
-        self.y_plane = y_plane
+        self.y_plane = y_plane - self.BLOCK_HEIGHT
         self.x_coord = WIDTH // 2
         self.left_bound = left_bound
         self.right_bound = right_bound
@@ -31,6 +31,7 @@ class Player():
         self.x_coord = max(self.x_coord, self.left_bound)
         self.x_coord = min(self.x_coord, self.right_bound - self.BLOCK_LENGTH)
         self.velocity = x_shift
+
 
 class Ball():
 
@@ -58,12 +59,12 @@ class OnePlayerBoard:
        
         self.board_prints = board_prints
         
-        self.bottom_plane = HEIGHT - self.OUTER_BORDER_SIZE
+        self.bottom_plane = HEIGHT
 
         self.player1 = Player(self.bottom_plane,\
             self.OUTER_BORDER_SIZE, WIDTH - self.OUTER_BORDER_SIZE)
 
-        self.ball = Ball(WIDTH // 2, HEIGHT // 2, 0, -8)
+        self.ball = Ball(WIDTH // 2, HEIGHT // 2, 0, -15)
         self.score = 0
         self.game_over = False
 
@@ -96,23 +97,21 @@ class OnePlayerBoard:
             if len(collision_list) == 0:
                 break
             else:
-                val = collision_list[0]
-                if val == 0:
+                print(collision_list)
+                if 0 in collision_list:
                     self.ball.yv *= -1
 
-                elif val == 1:
+                if 1 in collision_list:
                     self.game_over = True
  
-                elif val == 2 or val == 3:
+                if 2 in collision_list or 3 in collision_list:
                     self.ball.xv *= -1
 
-                elif val == 4:
+                elif 4 in collision_list:
                     self.ball.yv *= -1
                     self.ball.xv += self.player1.velocity + randint(-1, 1)
                     self.score += 1
                 
-                else:
-                    assert False 
                 
         draw_x = draw_y = 2 * self.OUTER_BORDER_SIZE
         font = pygame.font.SysFont('arial', 60)
