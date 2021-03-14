@@ -10,16 +10,13 @@ I also implemented automatic solvers, which can be invoked by pressing "a" at an
 As it turns out, dynamically creating unique and *interesting* mazes is a substantially harder problem than solving them!  I implemented a couple of different algorithms for maze generations, which are found in `maze_generators.py`.  Both algorithms use disjoint sets to ensure a solution exists. I found that the second algorithm, which starts with a blank maze and iteratively adds walls without creating disjoint sets, makes much more interesting mazes. More details can be found in the code. Some of the mazes it can produce are listed below.
 
 Here is what a level 7 maze might look like:
-![](figures/Levels7AutoSolve.gif)
+![](figures/Level7AutoSolve.gif)
 
 Here is what a level 12 maze might look like:
-![](figures/Levels12AutoSolve.gif)
-
-Here is what a level 12 maze might look like:
-![](figures/Levels12AutoSolve.gif)
+![](figures/Level12AutoSolve.gif)
 
 Here is what a level 15 maze might look like:
-![](figures/Levels15AutoSolve.gif)
+![](figures/Level15AutoSolve.gif)
 
 
 
