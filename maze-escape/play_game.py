@@ -30,15 +30,15 @@ def instructions(window, num_explored, current_level):
 
 
 def game_over(window):
-    pygame.draw.rect(window, WHITE, (100, 100, WIDTH - 200, 300))
+    pygame.draw.rect(window, WHITE, (100, 100, WIDTH - 200, 250))
 
-    draw_x, draw_y = 100, 100
-    font1 = pygame.font.SysFont("arial", 30)
-    font2 = pygame.font.SysFont("arial", 20)
+    draw_x, draw_y = 150, 150
+    font1 = pygame.font.SysFont("arial", 32)
+    font2 = pygame.font.SysFont("arial", 22)
     text1 = font1.render("LEVEL PASSED", True, BLACK)
     text2 = font2.render("PRESS 'r' FOR NEXT LEVEL", True, BLACK)
-    window.blit(text1, (draw_x, draw_y))
-    window.blit(text2, (draw_x, draw_y + 100))
+    window.blit(text1, (40 + draw_x, draw_y))
+    window.blit(text2, (20 + draw_x, draw_y + 100))
 
     
 def main():
