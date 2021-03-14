@@ -77,7 +77,7 @@ def main():
            
                 if event.key == pygame.K_a:
 
-                    solver = DFSSolver(maze, MAZE_END_VAL)
+                    solver = BFSSolver(maze, MAZE_END_VAL)
                     solution = solver.solve()
                     for move in solution:
                         maze.forecast_move(move)

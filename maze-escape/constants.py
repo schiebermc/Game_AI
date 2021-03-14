@@ -16,8 +16,8 @@ MAZE_END_VAL = 3
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREY = (128, 128, 128)
-RED = (128, 0, 0)
-BLUE = (0, 0, 128)
+RED = (200, 0, 0)
+BLUE = (0, 0, 200)
 
 # fonts
 pygame.init() # to avoid font error

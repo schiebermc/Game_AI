@@ -65,9 +65,42 @@ class DFSSolver(BaseMazeSolver):
             return False, []
 
         solved, path = dfs(self.pos)
+        
         print(path)
         return path
 
+
+class BFSSolver(BaseMazeSolver):
+        
+    def __init__(self, maze, end_val):
+        BaseMazeSolver.__init__(self, maze, end_val)
+
+    def solve(self):
+        print("Automatically solving...")
+        
+        visited = set([])
+        f = deque([(self.pos, [])])
+        while(len(f) > 0):
+            
+            node, path = f.pop()
+
+            if node in visited:
+                continue
+
+            visited.add(node)
+
+            i, j = node
+            if self.maze[i][j] == self.end_val:
+                return path
+            
+            for vals, move in self.getLegalMoves(i, j):     
+                if vals in visited:
+                    continue
+                           
+                f.appendleft((vals, path + [move]))
+        
+
+        return []
 
 
 

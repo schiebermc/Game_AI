@@ -229,10 +229,16 @@ class MazeGenerator2(BaseMazeGenerator):
         lin_end   = end[0]  * self.m + end[1]
         
         # create disjoint set to track maze openings
+        to_print = [0.0, 25.0, 50.0, 75.0, 100.0]
+        printed = set([])
         for attempt in range(self.n * self.m):
+            
             percent = (attempt+1) / (self.n * self.m) * 100
-            if percent in {0.0, 25.0, 50.0, 75.0, 100.0}: 
-                print("{}%".format(percent))
+            for threshold in to_print:
+                if percent >= threshold and not threshold in printed:
+                    print("{}%".format(threshold))
+                    printed.add(threshold)
+            
             i = randint(1, self.n-2)
             j = randint(1, self.m-2)
             if self.maze[i][j] == 1:
