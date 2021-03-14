@@ -18,6 +18,9 @@ Here is what a level 12 maze might look like:
 Here is what a level 15 maze might look like:
 ![](figures/Level15AutoSolve.gif)
 
+Here is what a level 15 maze might look like:
+![](figures/Level17AutoSolve.gif)
+
 
 
 
