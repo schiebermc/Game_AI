@@ -3,6 +3,8 @@
 In pursuit of my passion for Artificial Intelligence, games, and puzzles, I created this repo for personal exploration.  
 Each project contains its own directory. Here are short summaries of each project:
 
+Update March 14, 2021: I recently discovered `pygame` and I am having a lot of fun using it to visualize games! Going forward, I will try to make all new projects visualized and will be moving old projects into their visualized forms over time.
+
 
 Visualized Projects (backend tech + visualizations)
 * 8-Queens-GA: Solution for the 8-queens problem using genetic algorithms.  
