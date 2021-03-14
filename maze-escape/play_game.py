@@ -7,7 +7,7 @@ import pygame
 import argparse
 from solvers import *
 from constants import *  
-from maze_generators import *
+from maze import *
 
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT + INSTRUCTIONS_HEIGHT))
 
