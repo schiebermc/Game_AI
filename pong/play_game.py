@@ -37,7 +37,7 @@ def main():
     run = True
     clock = pygame.time.Clock()
 
-    board = OnePlayerBoard(human_player=False, num_computers=2)
+    board = OnePlayerBoard(human_player=False, num_computers=4)
  
     while run:
             
