@@ -8,6 +8,7 @@ Here is a basic version of what one player looks like:
 ![](figures/figures/1p_demo.mov)
 
 Most parameters can be easily modified, including player board size, ball size, speed, etc:
+![](figures/adjusted_parameters.mov)
 
 
 
