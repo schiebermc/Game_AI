@@ -35,7 +35,7 @@ Finally, I was very interested to implement a game of all players and no walls, 
 
 The do pretty well!
 
-One artifact of having four reversers playing together is that the ball can occasionally slow down to a near stop. This is expected, since the reverser player is always trying to reduce the velocity component along the direction parallel to their own movement. 
+One artifact of having four reversers playing together is that the ball can occasionally slow down to a near stop. This is expected, since the reverser player is always trying to reduce the velocity component along the direction parallel to their own movement.  To make their games more interesting, and to test their abilities, I increased the rate of errant bounces. 
 
 
 
