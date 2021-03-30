@@ -25,6 +25,13 @@ Here is an example of two followers cooperating with each other. I even increase
 You can see they control the ball very well! Even with the random bounces I implemented into the physics, they recover any errant shots with ease!
 
 
+Finally, I was very interested to implement a game of all players and no walls, so I added vertical players and the corresponding CPUs. Here is example of four cpus playing together:
+![](figures/4cpu_example.mov)
+
+
+The do pretty well!
+
+One artifact of having four reversers playing together is that the ball can occasionally slow down to a near stop. This is expected, since the reverser player is always trying to reduce the velocity component along the direction parallel to their own movement. 
 
 
 
