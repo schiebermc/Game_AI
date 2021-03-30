@@ -29,13 +29,14 @@ class HorizontalPlayer():
     BLOCK_HEIGHT = 30
 
     DIRECTIONS = {
+                    "NONE" : 0,
                     "LEFT"  : -1, 
                     "RIGHT" : 1,
                  }
     
     OUTER_BORDER_SIZE = 10
 
-    def __init__(self, y_plane, left_bound, right_bound, player_num, max_velocity=8):
+    def __init__(self, y_plane, left_bound, right_bound, player_num, max_velocity=5):
 
         self.y_plane = y_plane
         self.x_coord = WIDTH // 2
@@ -50,10 +51,10 @@ class HorizontalPlayer():
     def lossRect(self, window):
             
         if self.player_num == 0:
-            return pygame.draw.rect(window, WHITE, (0, 0, WIDTH, self.OUTER_BORDER_SIZE // 2)) 
-        elif self.player_num == 1:
             return pygame.draw.rect(window, WHITE, (0,\
                 HEIGHT - (self.OUTER_BORDER_SIZE // 2), WIDTH, self.OUTER_BORDER_SIZE // 2)) 
+        elif self.player_num == 1:
+            return pygame.draw.rect(window, WHITE, (0, 0, WIDTH, self.OUTER_BORDER_SIZE // 2)) 
         else:
             raise Exception()
 
@@ -61,11 +62,12 @@ class HorizontalPlayer():
         return pygame.draw.rect(window, GREY, (self.x_coord, \
             self.y_plane, self.BLOCK_LENGTH, self.BLOCK_HEIGHT))
 
-    def propagate(self, move, fraction_of_max_velocity):
+    def propagate(self, move, fraction_of_max_velocity=1.0):
 
         if not move in self.DIRECTIONS:
             raise Exception("Illegal move: ({}, {})".format(move, self.player_num))
 
+        print(move, self.max_velocity, fraction_of_max_velocity)
         x_shift = self.DIRECTIONS[move] * self.max_velocity * fraction_of_max_velocity
         self.x_coord += x_shift
         self.x_coord = max(self.x_coord, self.left_bound)
@@ -79,6 +81,7 @@ class VerticalPlayer():
     BLOCK_HEIGHT = 30
 
     DIRECTIONS = {
+                    "NONE" : 0,
                     "UP"  : -1, 
                     "DOWN" : 1,
                  }
@@ -138,11 +141,12 @@ class OnePlayerBoard:
 
         self.players = []
         if self.human_player:
-            self.players.append(Player(self.bottom_plane,\
-            self.OUTER_BORDER_SIZE, WIDTH - self.OUTER_BORDER_SIZE, len(self.players)))
+            self.players.append(HorizontalPlayer(HEIGHT - HorizontalPlayer.BLOCK_HEIGHT - self.OUTER_BORDER_SIZE,\
+                    self.OUTER_BORDER_SIZE, WIDTH - self.OUTER_BORDER_SIZE, 
+                    len(self.players)))
 
         self.computers = []
-        max_computer_velocity = 20
+        max_computer_velocity = 10
         for computer_player in range(num_computers):
 
             player_num = len(self.players)
@@ -186,7 +190,7 @@ class OnePlayerBoard:
     
     def restart(self):
 
-        self.ball = Ball(WIDTH // 2, HEIGHT // 2, 0, -4)
+        self.ball = Ball(WIDTH // 2, HEIGHT // 2, 0, -5)
         self.score = 0
         self.game_over = False
 
@@ -205,18 +209,20 @@ class OnePlayerBoard:
     def humanTurn(self, player_number, keys):
         
         if keys[pygame.K_LEFT]:
-            self.forecast_move(player_number, "LEFT")
+            self.forecast_move(player_number, move="LEFT")
             
         elif keys[pygame.K_RIGHT]:
-            self.forecast_move(player_number, "RIGHT")
-        
+            self.forecast_move(player_number, move="RIGHT")
+       
+        else:
+            self.forecast_move(player_number, move="NONE") 
 
 
     def draw(self, window):
-        window.fill(WHITE)
        
         while(True): 
         
+            window.fill(WHITE)
  
             # draw the player first
             for player in self.players:
@@ -226,7 +232,7 @@ class OnePlayerBoard:
             self.ball.propagate()
             ball_rect = self.ball.draw(window)
             
-            # horizontal outer borders
+            # draw the top border
             walls = []
             if len(self.players) <= 1:
                 walls.append(pygame.draw.rect(window, BLACK, (0, 0, WIDTH, self.OUTER_BORDER_SIZE))) 
@@ -234,7 +240,6 @@ class OnePlayerBoard:
             # vertical outer borders
             if len(self.players) <= 2:
                 walls.append(pygame.draw.rect(window, BLACK, (0, 0, self.OUTER_BORDER_SIZE, HEIGHT)))
-            
             if len(self.players) <= 3:
                 walls.append(pygame.draw.rect(window, BLACK, (WIDTH - self.OUTER_BORDER_SIZE, 0,  \
                              self.OUTER_BORDER_SIZE, HEIGHT)))
@@ -282,10 +287,10 @@ class OnePlayerBoard:
                 
                 if val <= 1:
                     self.ball.yv *= -1
-                    self.ball.xv += player_velocity + randint(-2, 2)
+                    self.ball.xv += player_velocity + randint(-1, 1)
                 else:
                     self.ball.xv *= -1
-                    self.ball.yv += player_velocity + randint(-2, 2)
+                    self.ball.yv += player_velocity + randint(-1, 1)
                                     
 
 
@@ -312,12 +317,12 @@ class OnePlayerBoard:
 
     
     def forecast_move(self, player_number, move="NONE", fraction_of_max_velocity=1.0):
-         
-        if move == "NONE" or move == None:
-            return
-   
-        legal_moves = ["LEFT", "RIGHT"] if player_number <= 1 else ["UP", "DOWN"]
-       
+        
+        move = "NONE" if move == None else move 
+ 
+        legal_moves = ["NONE"] + ["LEFT", "RIGHT"] if player_number <= 1 else ["UP", "DOWN"]
+
+        #print(move, legal_moves, move in legal_moves)      
         if move in legal_moves:
             self.players[player_number].propagate(move, fraction_of_max_velocity)
         else:

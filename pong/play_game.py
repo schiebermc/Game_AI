@@ -32,12 +32,22 @@ def game_over(window):
     window.blit(text2, (20 + draw_x, draw_y + 100))
 
 
+def parse_cli():
+    parser = argparse.ArgumentParser(
+            description="Argument Parser for Pong Game")
+    parser.add_argument("-hp", "-human_players", type=int, default=1)
+    parser.add_argument("-cp", "-computer_players", type=int, default=1)
+    return parser.parse_args()
+
+
 def main():
 
     run = True
     clock = pygame.time.Clock()
+    
+    args = parse_cli()
 
-    board = OnePlayerBoard(human_player=False, num_computers=4)
+    board = OnePlayerBoard(human_player=args.hp, num_computers=args.cp)
  
     while run:
             
@@ -48,13 +58,13 @@ def main():
 
         keys = pygame.key.get_pressed()
 
-        if board.game_over and keys[pygame.K_r]:
-            board.restart()
-        
-        board.allTurns(keys)
- 
         if not board.game_over:
+            board.allTurns(keys)
             board.draw(WINDOW)
+        else:
+            if keys[pygame.K_r]:
+                board.restart()
+        
         instructions(WINDOW)
         pygame.display.update()
  

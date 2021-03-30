@@ -13,7 +13,7 @@ class BaseComputer(abc.ABC):
         pass
 
 
-class ComputerPlayerFollower(BaseComputer):
+class ComputerPlayerHorizontalFollower(BaseComputer):
 
     def __init__(self, max_velocity, border_size):
         BaseComputer.__init__(self, max_velocity, border_size)
@@ -21,15 +21,16 @@ class ComputerPlayerFollower(BaseComputer):
     def makeMove(self, ball, player):
         center = player.x_coord + player.BLOCK_LENGTH // 2
         
-        if ball.x > center + 20:
+        if ball.x > center + 10:
             move ="RIGHT"
-        elif ball.x < center - 20:
+        elif ball.x < center - 10:
             move = "LEFT"
         else:
-            return None, None
+            return 1.0, None
         
-        fraction = abs(center - ball.x) / (WIDTH / 4)
+        fraction = (((abs(center - ball.x) / (WIDTH / 2)) * 100 ) ** 1.3 ) / 100
         fraction = max(.10, fraction)
+        fraction = min(1.0, fraction)
 
         return fraction, move
 
@@ -66,7 +67,7 @@ class ComputerPlayerHorizontalReverser(BaseComputer):
             elif ball.x < center - 10:
                 move = "LEFT"
             else:
-                return None, None
+                return 1.0, None
         
             return 1.0, move
 
@@ -103,7 +104,7 @@ class ComputerPlayerVerticalReverser(BaseComputer):
             elif ball.y < center - 10:
                 move = "UP"
             else:
-                return None, None
+                return 1.0, None
         
             return 1.0, move
 
