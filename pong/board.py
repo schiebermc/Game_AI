@@ -67,7 +67,6 @@ class HorizontalPlayer():
         if not move in self.DIRECTIONS:
             raise Exception("Illegal move: ({}, {})".format(move, self.player_num))
 
-        print(move, self.max_velocity, fraction_of_max_velocity)
         x_shift = self.DIRECTIONS[move] * self.max_velocity * fraction_of_max_velocity
         self.x_coord += x_shift
         self.x_coord = max(self.x_coord, self.left_bound)
@@ -88,7 +87,7 @@ class VerticalPlayer():
     
     OUTER_BORDER_SIZE = 10
 
-    def __init__(self, x_plane, up_bound, down_bound, player_num, max_velocity=8):
+    def __init__(self, x_plane, up_bound, down_bound, player_num, max_velocity=5):
 
         self.x_plane = x_plane
         self.y_coord = HEIGHT // 2
@@ -287,10 +286,10 @@ class OnePlayerBoard:
                 
                 if val <= 1:
                     self.ball.yv *= -1
-                    self.ball.xv += player_velocity + randint(-1, 1)
+                    self.ball.xv += player_velocity + randint(-3, 3)
                 else:
                     self.ball.xv *= -1
-                    self.ball.yv += player_velocity + randint(-1, 1)
+                    self.ball.yv += player_velocity + randint(-3, 3)
                                     
 
 
@@ -320,7 +319,7 @@ class OnePlayerBoard:
         
         move = "NONE" if move == None else move 
  
-        legal_moves = ["NONE"] + ["LEFT", "RIGHT"] if player_number <= 1 else ["UP", "DOWN"]
+        legal_moves = ["NONE"] + (["LEFT", "RIGHT"] if player_number <= 1 else ["UP", "DOWN"])
 
         #print(move, legal_moves, move in legal_moves)      
         if move in legal_moves:
