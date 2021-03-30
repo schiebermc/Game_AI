@@ -21,7 +21,7 @@ This cpu is not too good at pong! You can notice this right away, that the basic
 * Follower
 * Reverser
 
-Here is an example of two followers cooperating with each other. I even increased the ball speed and rate of random orthogonal velocity shifts:
+Here is an example of two reversers cooperating with each other. I even increased the ball speed and rate of random orthogonal velocity shifts:
 
 ![](figures/2cpu_reversers.mov)
 
