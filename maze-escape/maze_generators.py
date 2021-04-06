@@ -184,7 +184,7 @@ class MazeGenerator2(BaseMazeGenerator):
    
         print("I'm thinking of a good maze for you..")
  
-        # start with a randomized maze
+        # start with an empty maze
         self.emptyMaze()        
         
         # pick a start and end for the maze
@@ -196,7 +196,15 @@ class MazeGenerator2(BaseMazeGenerator):
         lin_start = start[0] * self.m + start[1]
         lin_end   = end[0]  * self.m + end[1]
         
-        # create disjoint set to track maze openings
+        # Try n * m attempts to fill in empty spaces. Only validate 
+        # a fill if it does not create a disjoint set. The parameter of
+        # how many attempts dicates the relative sparsity of the maze. 
+        # I found that n * m generates pretty good looking mazes, whereas
+        # more or less than that creates lopsided paths-to-walls ratios. 
+        # Moreover, this process is quite computationally expensive. 
+        # The complexity as currently implemented is O(N^4). We have an
+        # O(N^2) outer loop for filling attempts, and an O(N^2) inner loop
+        # for generating and computing disjoint sets. 
         to_print = [0.0, 25.0, 50.0, 75.0, 100.0]
         printed = set([])
         for attempt in range(self.n * self.m):
