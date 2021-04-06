@@ -136,6 +136,9 @@ class MazeGenerator1(BaseMazeGenerator):
     # 2) smash non-perimeter walls until start and end are in the 
     #    same disjoint set
 
+    # This algorithm was ultimately retired in favor of the next one, 
+    # since the mazes it created tend to be quite sparse. 
+
     def __init__(self, n, m):
         BaseMazeGenerator.__init__(self, n, m)
         
@@ -175,7 +178,9 @@ class MazeGenerator2(BaseMazeGenerator):
 
     # algorithm: 
     # 1) start with a completely empty maze
-    # 2) add as many walls as possible, without creating another disjoint set
+    # 2) add as many walls as we like, without creating another disjoint set
+    
+    # This algorithm is currenlty used for the game.
     
     def __init__(self, n, m):
         BaseMazeGenerator.__init__(self, n, m)
