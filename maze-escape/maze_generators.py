@@ -102,12 +102,6 @@ class BaseMazeGenerator(abc.ABC):
             for j in range(self.m):
                 if self.maze[i][j] == 0:
                     self.unionNeighbors(i, j, dj)
-                # the symmetry-based unions botched the maze gen 2 algo,
-                # i'm not sure why? TODO
-                #elif i < self.n - 1 and self.maze[i+1][j] == 0:
-                #    dj.union(i * self.m + j, (i+1) * self.m + j)
-                #elif j < self.m - 1 and self.maze[i][j+1] == 0:
-                #    dj.union(i * self.m + j, i * self.m + j + 1)
         return dj 
 
     def numOpenComponents(self):
