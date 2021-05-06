@@ -7,7 +7,6 @@ Update March 14, 2021: I recently discovered `pygame` and I am having a lot of f
 Each project contains its own directory. Please visit the directories for more informaton. Here are short summaries of each project:
 
 Visualized Projects (backend tech + visualizations)
-* 8-Queens-GA: Solution for the 8-queens problem using genetic algorithms.  
 * N-Puzzle: interactive N-puzzle game board with automated solutions using A* search.
 * traveling-salesman: Framework, test cases, and solvers to TSP. 
 * maze-escape: interactive maze escape game. Includes unique maze generations with increasing difficulty and automated solvers.
@@ -15,6 +14,7 @@ Visualized Projects (backend tech + visualizations)
 
 
 Non-Visualized Projects (just the backend tech)
+* 8-Queens-GA: Solution for the 8-queens problem using genetic algorithms.  
 * battleship: Game player, uses probabilistic decision making. written in C++
 * bidding-game: Game player, bidding tug of war.
 * bidding-tic-tac-toe: Game player, tic-tac-toe with bidding strategies.
